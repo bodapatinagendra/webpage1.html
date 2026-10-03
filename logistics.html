@@ -1,0 +1,777 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RTC Parcel & Courier Services</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f0f5fa;
+            color: #222;
+        }
+
+        header {
+            background: #073b74;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        header h1 {
+            font-size: 30px;
+        }
+
+        header p {
+            margin-top: 10px;
+        }
+
+        nav {
+            background: #052b55;
+            text-align: center;
+            padding: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 12px;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: orange;
+        }
+
+        .hero {
+            background: linear-gradient(
+                to right, #0755a0, #1596c5
+            );
+            color: white;
+            text-align: center;
+            padding: 45px 20px;
+        }
+
+        .hero h2 {
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 15px;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px #0002;
+        }
+
+        h2 {
+            color: #073b74;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            color: #073b74;
+            margin-bottom: 12px;
+        }
+
+        .services {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit, minmax(220px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .card {
+            background: #eef6ff;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #d5e5f5;
+        }
+
+        .card .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            line-height: 1.6;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit, minmax(220px, 1fr)
+            );
+            gap: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            background: #0874c9;
+            color: white;
+            padding: 13px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #f39c12;
+            color: black;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #e8f7ed;
+            border-left: 5px solid green;
+            border-radius: 6px;
+            line-height: 1.8;
+        }
+
+        footer {
+            background: #052b55;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        @media(max-width: 600px) {
+            header h1 {
+                font-size: 23px;
+            }
+
+            nav a {
+                display: inline-block;
+                margin: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+
+<header>
+    <h1>📦 RTC PARCEL & COURIER</h1>
+    <p>Safe Delivery | Fast Service | Reliable Transport</p>
+</header>
+
+<!-- NAVIGATION -->
+
+<nav>
+    <a href="#home">Home</a>
+    <a href="#booking">Parcel Booking</a>
+    <a href="#locations">Locations</a>
+    <a href="#charges">Charges</a>
+    <a href="#tracking">Tracking</a>
+    <a href="#support">Support</a>
+</nav>
+
+<!-- HOME -->
+
+<div class="hero" id="home">
+    <h2>Welcome to RTC Parcel Services</h2>
+    <p>Send your parcels safely and conveniently.</p>
+    <br>
+    <a href="#booking">
+        <button>Book Your Parcel</button>
+    </a>
+</div>
+
+<div class="container">
+
+    <!-- 1. PARCEL BOOKING -->
+
+    <div class="section" id="booking">
+        <h2>1. 📦 Parcel Booking</h2>
+
+        <form id="bookingForm">
+
+            <div>
+                <label>Sender Name</label>
+                <input type="text" id="sender"
+                       placeholder="Enter sender name" required>
+            </div>
+
+            <div>
+                <label>Receiver Name</label>
+                <input type="text" id="receiver"
+                       placeholder="Enter receiver name" required>
+            </div>
+
+            <div>
+                <label>Sender Mobile</label>
+                <input type="tel" id="senderMobile"
+                       pattern="[0-9]{10}"
+                       placeholder="10 digit number" required>
+            </div>
+
+            <div>
+                <label>Receiver Mobile</label>
+                <input type="tel" id="receiverMobile"
+                       pattern="[0-9]{10}"
+                       placeholder="10 digit number" required>
+            </div>
+
+            <div>
+                <label>Parcel Type</label>
+                <select id="parcelType" required>
+                    <option value="">Select Parcel Type</option>
+                    <option>Documents</option>
+                    <option>Clothes</option>
+                    <option>Food Items</option>
+                    <option>Electronics</option>
+                    <option>Household Goods</option>
+                    <option>Other Goods</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Parcel Weight (kg)</label>
+                <input type="number" id="weight"
+                       min="0.1" step="0.1"
+                       placeholder="Enter weight" required>
+            </div>
+
+            <div class="full">
+                <button type="submit">
+                    Book Parcel
+                </button>
+            </div>
+
+        </form>
+
+        <div class="result" id="bookingResult"></div>
+    </div>
+
+    <!-- 2. SENDER AND RECEIVER DETAILS -->
+
+    <div class="section">
+        <h2>2. 👤 Sender & Receiver Details</h2>
+
+        <form id="detailsForm">
+
+            <div>
+                <label>Sender Full Address</label>
+                <textarea id="senderAddress"
+                          rows="3"
+                          placeholder="Enter sender address"
+                          required></textarea>
+            </div>
+
+            <div>
+                <label>Receiver Full Address</label>
+                <textarea id="receiverAddress"
+                          rows="3"
+                          placeholder="Enter receiver address"
+                          required></textarea>
+            </div>
+
+            <div class="full">
+                <button type="submit">
+                    Save Address Details
+                </button>
+            </div>
+
+        </form>
+
+        <div class="result" id="detailsResult"></div>
+    </div>
+
+    <!-- 3. PARCEL TYPE AND WEIGHT -->
+
+    <div class="section">
+        <h2>3. ⚖ Parcel Type & Weight</h2>
+
+        <p>
+            Select the parcel category and enter the parcel weight
+            to prepare your shipment details.
+        </p>
+
+        <br>
+
+        <form id="weightForm">
+
+            <div>
+                <label>Parcel Category</label>
+                <select id="category" required>
+                    <option value="">Select Category</option>
+                    <option>Documents</option>
+                    <option>Clothes</option>
+                    <option>Food Items</option>
+                    <option>Electronics</option>
+                    <option>Household Goods</option>
+                    <option>Other Goods</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Weight in Kilograms</label>
+                <input type="number" id="parcelWeight"
+                       min="0.1" step="0.1"
+                       placeholder="Enter weight" required>
+            </div>
+
+            <div class="full">
+                <button type="submit">
+                    Confirm Parcel Details
+                </button>
+            </div>
+
+        </form>
+
+        <div class="result" id="weightResult"></div>
+    </div>
+
+    <!-- 4. PICKUP AND DELIVERY LOCATIONS -->
+
+    <div class="section" id="locations">
+        <h2>4. 📍 Pickup & Delivery Locations</h2>
+
+        <form id="locationForm">
+
+            <div>
+                <label>Pickup District</label>
+                <select id="pickupDistrict" required>
+                    <option value="">Select District</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Pickup Location</label>
+                <select id="pickupLocation" required>
+                    <option value="">Select Pickup Location</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Delivery District</label>
+                <select id="deliveryDistrict" required>
+                    <option value="">Select District</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Delivery Location</label>
+                <select id="deliveryLocation" required>
+                    <option value="">Select Delivery Location</option>
+                </select>
+            </div>
+
+            <div class="full">
+                <button type="submit">
+                    Confirm Locations
+                </button>
+            </div>
+
+        </form>
+
+        <div class="result" id="locationResult"></div>
+    </div>
+
+    <!-- 5. CHARGE ESTIMATION -->
+
+    <div class="section" id="charges">
+        <h2>5. 💰 Parcel Charge Estimation</h2>
+
+        <form id="chargeForm">
+
+            <div>
+                <label>Parcel Weight (kg)</label>
+                <input type="number" id="chargeWeight"
+                       min="0.1" step="0.1"
+                       placeholder="Enter weight" required>
+            </div>
+
+            <div>
+                <label>Delivery Service</label>
+                <select id="deliveryType" required>
+                    <option value="">Select Service</option>
+                    <option value="30">Standard Delivery</option>
+                    <option value="50">Express Delivery</option>
+                </select>
+            </div>
+
+            <div class="full">
+                <button type="submit">
+                    Calculate Charges
+                </button>
+            </div>
+
+        </form>
+
+        <div class="result" id="chargeResult"></div>
+
+        <p style="margin-top:15px;color:#666;">
+            Note: The rates used are demonstration rates only,
+            not official RTC parcel tariffs.
+        </p>
+    </div>
+
+    <!-- 6. TRACKING AND CUSTOMER SUPPORT -->
+
+    <div class="section" id="tracking">
+        <h2>6. 🚚 Parcel Tracking & Customer Support</h2>
+
+        <h3>Track Your Parcel</h3>
+
+        <form id="trackingForm">
+
+            <div>
+                <label>Tracking Number</label>
+                <input type="text" id="trackingNumber"
+                       placeholder="Enter tracking number"
+                       required>
+            </div>
+
+            <div class="full">
+                <button type="submit">
+                    Track Parcel
+                </button>
+            </div>
+
+        </form>
+
+        <div class="result" id="trackingResult"></div>
+
+        <br><br>
+
+        <h3 id="support">Customer Support</h3>
+
+        <form id="supportForm">
+
+            <div>
+                <label>Your Name</label>
+                <input type="text" id="customerName"
+                       placeholder="Enter your name" required>
+            </div>
+
+            <div>
+                <label>Mobile Number</label>
+                <input type="tel" id="customerMobile"
+                       pattern="[0-9]{10}"
+                       placeholder="10 digit mobile number"
+                       required>
+            </div>
+
+            <div>
+                <label>Issue Type</label>
+                <select id="issue" required>
+                    <option value="">Select Issue</option>
+                    <option>Parcel Booking</option>
+                    <option>Delivery Delay</option>
+                    <option>Parcel Tracking</option>
+                    <option>Payment Issue</option>
+                    <option>Other</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Message</label>
+                <textarea id="message" rows="3"
+                          placeholder="Enter your message"
+                          required></textarea>
+            </div>
+
+            <div class="full">
+                <button type="submit">
+                    Submit Support Request
+                </button>
+            </div>
+
+        </form>
+
+        <div class="result" id="supportResult"></div>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+
+<footer>
+    <h3 style="color:white;">RTC Parcel & Courier Services</h3>
+    <p>Safe and Reliable Parcel Delivery</p>
+    <br>
+    <p>© 2026 RTC Logistics Demo Website</p>
+</footer>
+
+<script>
+
+// DISTRICT AND PICKUP LOCATION DATA
+
+const districts = {
+    "Alluri Sitharama Raju": ["Paderu", "Araku"],
+    "Anakapalli": ["Anakapalli", "Narsipatnam"],
+    "Anantapur": ["Anantapur", "Guntakal"],
+    "Annamayya": ["Madanapalle", "Rayachoti"],
+    "Bapatla": ["Bapatla", "Chirala"],
+    "Chittoor": ["Chittoor", "Palamaner"],
+    "Dr. B. R. Ambedkar Konaseema": ["Amalapuram", "Razole"],
+    "East Godavari": ["Rajamahendravaram", "Kovvur"],
+    "Eluru": ["Eluru", "Jangareddygudem"],
+    "Guntur": ["Guntur", "Tenali"],
+    "Kakinada": ["Kakinada", "Pithapuram"],
+    "Krishna": ["Machilipatnam", "Gudivada"],
+    "Kurnool": ["Kurnool", "Adoni"],
+    "Nandyal": ["Nandyal", "Dhone"],
+    "NTR": ["Vijayawada", "Tiruvuru"],
+    "Palnadu": ["Narasaraopet", "Piduguralla"],
+    "Parvathipuram Manyam": ["Parvathipuram", "Salur"],
+    "Prakasam": ["Ongole", "Markapuram"],
+    "Sri Potti Sriramulu Nellore": ["Nellore", "Kavali"],
+    "Sri Sathya Sai": ["Puttaparthi", "Hindupur"],
+    "Srikakulam": ["Srikakulam", "Palasa"],
+    "Tirupati": ["Tirupati", "Srikalahasti"],
+    "Visakhapatnam": ["Visakhapatnam", "Gajuwaka"],
+    "Vizianagaram": ["Vizianagaram", "Bobbili"],
+    "West Godavari": ["Bhimavaram", "Narasapuram"],
+    "YSR Kadapa": ["Kadapa", "Proddatur"]
+};
+
+// FILL DISTRICT DROPDOWNS
+
+const pickupDistrict =
+    document.getElementById("pickupDistrict");
+
+const deliveryDistrict =
+    document.getElementById("deliveryDistrict");
+
+Object.keys(districts).forEach(function(district) {
+    pickupDistrict.add(new Option(district, district));
+    deliveryDistrict.add(new Option(district, district));
+});
+
+// UPDATE PICKUP AND DELIVERY STOPS
+
+function updateLocations(districtSelect, locationSelect) {
+
+    districtSelect.addEventListener("change", function() {
+
+        locationSelect.innerHTML =
+            '<option value="">Select Location</option>';
+
+        const selectedDistrict = districtSelect.value;
+
+        if (districts[selectedDistrict]) {
+
+            districts[selectedDistrict].forEach(function(location) {
+                locationSelect.add(
+                    new Option(location, location)
+                );
+            });
+
+        }
+    });
+}
+
+updateLocations(
+    pickupDistrict,
+    document.getElementById("pickupLocation")
+);
+
+updateLocations(
+    deliveryDistrict,
+    document.getElementById("deliveryLocation")
+);
+
+// 1. PARCEL BOOKING
+
+document.getElementById("bookingForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const bookingID = "RTC" +
+        Math.floor(100000 + Math.random() * 900000);
+
+    const result = document.getElementById("bookingResult");
+
+    result.style.display = "block";
+
+    result.innerHTML = `
+        <h3>Parcel Booking Preview</h3>
+        Booking Number: ${bookingID}<br>
+        Sender: ${document.getElementById("sender").value}<br>
+        Receiver: ${document.getElementById("receiver").value}<br>
+        Parcel Type: ${document.getElementById("parcelType").value}<br>
+        Weight: ${document.getElementById("weight").value} kg<br>
+        <b>Demo booking created successfully!</b>
+        <br>This booking is not registered with an official RTC system.
+    `;
+});
+
+// 2. SENDER AND RECEIVER ADDRESS
+
+document.getElementById("detailsForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const result = document.getElementById("detailsResult");
+
+    result.style.display = "block";
+
+    result.innerHTML = `
+        <h3>Address Details</h3>
+        Sender Address: ${document.getElementById("senderAddress").value}<br>
+        Receiver Address: ${document.getElementById("receiverAddress").value}<br>
+        Address details entered successfully.
+    `;
+});
+
+// 3. PARCEL WEIGHT AND TYPE
+
+document.getElementById("weightForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const result = document.getElementById("weightResult");
+
+    result.style.display = "block";
+
+    result.innerHTML = `
+        Parcel Category: ${document.getElementById("category").value}<br>
+        Parcel Weight: ${document.getElementById("parcelWeight").value} kg<br>
+        Parcel details confirmed.
+    `;
+});
+
+// 4. PICKUP AND DELIVERY LOCATIONS
+
+document.getElementById("locationForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const result = document.getElementById("locationResult");
+
+    result.style.display = "block";
+
+    result.innerHTML = `
+        <h3>Delivery Route</h3>
+        Pickup: ${document.getElementById("pickupLocation").value},
+        ${pickupDistrict.value}<br>
+        Delivery: ${document.getElementById("deliveryLocation").value},
+        ${deliveryDistrict.value}<br>
+        Locations selected successfully.
+    `;
+});
+
+// 5. CHARGE CALCULATION
+
+document.getElementById("chargeForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const weight = Number(
+        document.getElementById("chargeWeight").value
+    );
+
+    const rate = Number(
+        document.getElementById("deliveryType").value
+    );
+
+    const amount = weight * rate;
+
+    const result = document.getElementById("chargeResult");
+
+    result.style.display = "block";
+
+    result.innerHTML = `
+        <h3>Parcel Charge Estimate</h3>
+        Parcel Weight: ${weight} kg<br>
+        Estimated Charge: ₹${amount.toFixed(2)}<br>
+        <b>This is a sample estimate only.</b>
+    `;
+});
+
+// 6. PARCEL TRACKING
+
+document.getElementById("trackingForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const number =
+        document.getElementById("trackingNumber").value;
+
+    const result = document.getElementById("trackingResult");
+
+    result.style.display = "block";
+
+    result.innerHTML = `
+        <h3>Tracking Information</h3>
+        Tracking Number: ${number}<br>
+        Status: Tracking system is not connected.<br>
+        Please use the official parcel operator's tracking service
+        for actual shipment information.
+    `;
+});
+
+// CUSTOMER SUPPORT
+
+document.getElementById("supportForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const result = document.getElementById("supportResult");
+
+    result.style.display = "block";
+
+    result.innerHTML = `
+        <h3>Support Request Preview</h3>
+        Name: ${document.getElementById("customerName").value}<br>
+        Issue: ${document.getElementById("issue").value}<br>
+        Message: ${document.getElementById("message").value}<br>
+        Your request has been prepared in this demo.
+        No information has been sent to a server.
+    `;
+});
+
+</script>
+
+</body>
+</html>

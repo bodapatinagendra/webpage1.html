@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodFinder - Restaurants Near You</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff5722;
+            --secondary: #ff7043;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --card: white;
+            --text: #1f2937;
+            --border: #e5e7eb;
+            --green: #16a34a;
+        }
+
+        body.dark {
+            --light: #111827;
+            --card: #1f2937;
+            --text: #f9fafb;
+            --border: #374151;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--light);
+            color: var(--text);
+            transition: 0.3s;
+        }
+
+        /* HEADER */
+
+        header {
+            background: linear-gradient(135deg, #ff5722, #ff9800);
+            color: white;
+            padding: 18px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* HERO */
+
+        .hero {
+            text-align: center;
+            padding: 65px 20px;
+            background:
+                linear-gradient(
+                    rgba(0,0,0,0.55),
+                    rgba(0,0,0,0.55)
+                ),
+                url("https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=80");
+
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 18px;
+        }
+
+        .search-box {
+            max-width: 750px;
+            margin: 30px auto 0;
+            display: flex;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 15px;
+            font-size: 17px;
+            color: #222;
+        }
+
+        .search-box button {
+            border: none;
+            background: var(--primary);
+            color: white;
+            padding: 0 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .search-box button:hover {
+            background: #e64a19;
+        }
+
+        /* MAIN */
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 35px auto;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title h2 {
+            margin: 0;
+        }
+
+        #locationText {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* RESTAURANT GRID */
+
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .restaurant-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .restaurant-image {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+        }
+
+        .restaurant-info {
+            padding: 18px;
+        }
+
+        .restaurant-info h3 {
+            margin: 0 0 8px;
+            font-size: 21px;
+        }
+
+        .rating {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+
+        .restaurant-address {
+            color: #64748b;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .view-menu-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .view-menu-btn:hover {
+            background: #e64a19;
+        }
+
+        /* LOADING */
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            display: none;
+        }
+
+        .spinner {
+            width: 45px;
+            height: 45px;
+            border: 5px solid #ddd;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: auto auto 15px;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* MODAL */
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            overflow-y: auto;
+            padding: 30px 10px;
+        }
+
+        .modal-content {
+            background: var(--card);
+            color: var(--text);
+            width: 95%;
+            max-width: 800px;
+            margin: auto;
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            animation: popup 0.25s ease;
+        }
+
+        @keyframes popup {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 12px;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: red;
+        }
+
+        /* MENU */
+
+        .menu-header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .menu-header h2 {
+            margin: 0;
+            color: var(--primary);
+        }
+
+        .category-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 10px 15px;
+            border: 1px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .category-btn.active,
+        .category-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .food-list {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .food-item {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            background: var(--card);
+        }
+
+        .food-item h3 {
+            margin: 0 0 8px;
+        }
+
+        .food-description {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .food-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            color: var(--green);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .add-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 13px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .add-btn:hover {
+            background: #e64a19;
+        }
+
+        /* CART */
+
+        .cart-panel {
+            position: fixed;
+            right: -420px;
+            top: 0;
+            width: 400px;
+            max-width: 95%;
+            height: 100%;
+            background: var(--card);
+            color: var(--text);
+            z-index: 5000;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.3);
+            transition: right 0.3s;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .cart-panel.open {
+            right: 0;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quantity-controls button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cart-total {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: right;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: var(--green);
+            color: white;
+            border-radius: 8px;
+            font-size: 17px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* TABLE BOOKING */
+
+        .booking-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .booking-form label {
+            font-weight: bold;
+        }
+
+        .booking-form input,
+        .booking-form select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .book-btn {
+            background: var(--primary);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* FOOTER */
+
+        footer {
+            margin-top: 50px;
+            background: #111827;
+            color: white;
+            padding: 35px;
+            text-align: center;
+        }
+
+        /* TOAST */
+
+        #toast {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111827;
+            color: white;
+            padding: 14px 22px;
+            border-radius: 8px;
+            display: none;
+            z-index: 10000;
+        }
+
+        /* MOBILE */
+
+        @media(max-width:600px) {
+
+            .hero h1 {
+                font-size: 30px;
+            }
+
+            .search-box {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .search-box button {
+                padding: 14px;
+            }
+
+            .cart-panel {
+                width: 90%;
+            }
+
+            header {
+                padding: 15px;
+            }
+
+            .logo {
+                font-size: 22px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+
+<header>
+
+    <div class="logo">
+        🍽️ FoodFinder
+    </div>
+
+    <div class="nav-buttons">
+
+        <button class="nav-btn" onclick="toggleDarkMode()">
+            🌙
+        </button>
+
+        <button class="nav-btn" onclick="openCart()">
+            🛒 Cart
+            <span id="cartCount">0</span>
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- HERO -->
+
+<section class="hero">
+
+    <h1>Find Restaurants Near You</h1>
+
+    <p>
+        Search your city, town or location and discover restaurants.
+    </p>
+
+    <div class="search-box">
+
+        <input
+            type="text"
+            id="locationInput"
+            placeholder="Enter city or place e.g. Vijayawada"
+        >
+
+        <button onclick="searchRestaurants()">
+            🔍 Search
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- MAIN -->
+
+<div class="container">
+
+    <div class="section-title">
+
+        <h2>
+            Restaurants
+        </h2>
+
+        <span id="locationText">
+            Search a location
+        </span>
+
+    </div>
+
+
+    <div class="loading" id="loading">
+
+        <div class="spinner"></div>
+
+        Searching restaurants...
+
+    </div>
+
+
+    <div
+        class="restaurant-grid"
+        id="restaurantGrid">
+    </div>
+
+</div>
+
+
+<!-- RESTAURANT MENU MODAL -->
+
+<div
+    class="modal"
+    id="menuModal">
+
+    <div class="modal-content">
+
+        <span
+            class="close"
+            onclick="closeMenu()">
+            &times;
+        </span>
+
+
+        <div class="menu-header">
+
+            <h2 id="menuRestaurantName">
+                Restaurant
+            </h2>
+
+            <p id="menuRestaurantAddress">
+            </p>
+
+        </div>
+
+
+        <!-- CATEGORY BUTTONS -->
+
+        <div class="category-buttons">
+
+            <button
+                class="category-btn active"
+                onclick="showCategory('Biryani', this)">
+                🍛 Biryani
+            </button>
+
+            <button
+                class="category-btn"
+                onclick="showCategory('Fast Food', this)">
+                🍔 Fast Food
+            </button>
+
+            <button
+                class="category-btn"
+                onclick="showCategory('Snacks', this)">
+                🍟 Snacks
+            </button>
+
+            <button
+                class="category-btn"
+                onclick="showCategory('Drinks', this)">
+                🥤 Drinks
+            </button>
+
+        </div>
+
+
+        <div
+            class="food-list"
+            id="foodList">
+        </div>
+
+
+        <br>
+
+        <button
+            class="book-btn"
+            onclick="openBooking()">
+
+            🪑 Book a Table
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- CART -->
+
+<div
+    class="cart-panel"
+    id="cartPanel">
+
+    <div class="cart-header">
+
+        <h2>
+            🛒 Your Cart
+        </h2>
+
+        <button
+            onclick="closeCart()"
+            style="
+                border:none;
+                background:none;
+                font-size:25px;
+                cursor:pointer;
+            ">
+            ×
+        </button>
+
+    </div>
+
+
+    <div id="cartItems">
+
+        <p>
+            Your cart is empty.
+        </p>
+
+    </div>
+
+
+    <div
+        class="cart-total"
+        id="cartTotal">
+
+        Total: ₹0
+
+    </div>
+
+
+    <button
+        class="checkout-btn"
+        onclick="placeOrder()">
+
+        Place Order
+
+    </button>
+
+</div>
+
+
+<!-- TABLE BOOKING MODAL -->
+
+<div
+    class="modal"
+    id="bookingModal">
+
+    <div class="modal-content">
+
+        <span
+            class="close"
+            onclick="closeBooking()">
+            &times;
+        </span>
+
+        <h2>
+            🪑 Book a Table
+        </h2>
+
+        <p>
+            Restaurant:
+            <strong id="bookingRestaurant"></strong>
+        </p>
+
+
+        <form
+            class="booking-form"
+            onsubmit="bookTable(event)">
+
+            <div>
+
+                <label>
+                    Name
+                </label>
+
+                <input
+                    type="text"
+                    id="customerName"
+                    placeholder="Enter your name"
+                    required>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Mobile Number
+                </label>
+
+                <input
+                    type="tel"
+                    id="customerMobile"
+                    placeholder="Enter mobile number"
+                    pattern="[0-9]{10}"
+                    required>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Date
+                </label>
+
+                <input
+                    type="date"
+                    id="bookingDate"
+                    required>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Time
+                </label>
+
+                <input
+                    type="time"
+                    id="bookingTime"
+                    required>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Number of People
+                </label>
+
+                <select
+                    id="peopleCount">
+
+                    <option value="1">
+                        1 Person
+                    </option>
+
+                    <option value="2">
+                        2 People
+                    </option>
+
+                    <option value="3">
+                        3 People
+                    </option>
+
+                    <option value="4">
+                        4 People
+                    </option>
+
+                    <option value="5">
+                        5 People
+                    </option>
+
+                    <option value="6">
+                        6 People
+                    </option>
+
+                    <option value="7">
+                        7 People
+                    </option>
+
+                    <option value="8">
+                        8 People
+                    </option>
+
+                    <option value="10">
+                        10 People
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="book-btn">
+
+                Confirm Table Booking
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- TOAST -->
+
+<div id="toast">
+    Added to cart
+</div>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    <h2>
+        🍽️ FoodFinder
+    </h2>
+
+    <p>
+        Discover restaurants, order food and book tables.
+    </p>
+
+    <p>
+        © 2026 FoodFinder
+    </p>
+
+</footer>
+
+
+
+<script>
+
+    /* =====================================================
+       DEMO RESTAURANT DATA
+    ===================================================== */
+
+    const demoRestaurants = [
+
+        {
+            id: 1,
+            name: "Spice Paradise",
+            address: "Main Road, Vijayawada",
+            rating: "4.5",
+            type: "Biryani • Indian • Fast Food",
+            image:
+            "https://images.unsplash.com/photo-1563379091339-03246963d29c?auto=format&fit=crop&w=700&q=80"
+        },
+
+        {
+            id: 2,
+            name: "Royal Biryani House",
+            address: "MG Road, Vijayawada",
+            rating: "4.4",
+            type: "Biryani • Indian",
+            image:
+            "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=700&q=80"
+        },
+
+        {
+            id: 3,
+            name: "Food Street",
+            address: "City Center",
+            rating: "4.2",
+            type: "Fast Food • Snacks • Drinks",
+            image:
+            "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=700&q=80"
+        },
+
+        {
+            id: 4,
+            name: "Taste of India",
+            address: "Market Road",
+            rating: "4.6",
+            type: "Indian • Biryani • Snacks",
+            image:
+            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80"
+        }
+
+    ];
+
+
+    /* =====================================================
+       FOOD MENU
+    ===================================================== */
+
+    const menuItems = {
+
+        "Biryani": [
+
+            {
+                name: "Chicken Biryani",
+                description: "Fragrant basmati rice with chicken and spices",
+                price: 220
+            },
+
+            {
+                name: "Mutton Biryani",
+                description: "Tender mutton with aromatic biryani rice",
+                price: 300
+            },
+
+            {
+                name: "Egg Biryani",
+                description: "Biryani rice with boiled eggs",
+                price: 170
+            },
+
+            {
+                name: "Veg Biryani",
+                description: "Mixed vegetables with aromatic rice",
+                price: 150
+            }
+
+        ],
+
+
+        "Fast Food": [
+
+            {
+                name: "Chicken Burger",
+                description: "Crispy chicken burger with vegetables",
+                price: 140
+            },
+
+            {
+                name: "Chicken Fried Rice",
+                description: "Fried rice with chicken and vegetables",
+                price: 180
+            },
+
+            {
+                name: "Chicken Noodles",
+                description: "Chinese-style chicken noodles",
+                price: 160
+            },
+
+            {
+                name: "Veg Pizza",
+                description: "Cheesy pizza with fresh vegetables",
+                price: 220
+            }
+
+        ],
+
+
+        "Snacks": [
+
+            {
+                name: "Chicken 65",
+                description: "Spicy crispy chicken snack",
+                price: 180
+            },
+
+            {
+                name: "Samosa",
+                description: "Crispy potato samosa",
+                price: 30
+            },
+
+            {
+                name: "French Fries",
+                description: "Crispy salted potato fries",
+                price: 100
+            },
+
+            {
+                name: "Paneer 65",
+                description: "Crispy spicy paneer",
+                price: 160
+            }
+
+        ],
+
+
+        "Drinks": [
+
+            {
+                name: "Fresh Lime Soda",
+                description: "Fresh lime with chilled soda",
+                price: 60
+            },
+
+            {
+                name: "Mango Juice",
+                description: "Fresh mango drink",
+                price: 80
+            },
+
+            {
+                name: "Cold Coffee",
+                description: "Chilled creamy coffee",
+                price: 100
+            },
+
+            {
+                name: "Soft Drink",
+                description: "Chilled soft drink",
+                price: 50
+            }
+
+        ]
+
+    };
+
+
+    /* =====================================================
+       VARIABLES
+    ===================================================== */
+
+    let currentRestaurant = null;
+
+    let currentCategory = "Biryani";
+
+    let cart = [];
+
+    let restaurantResults = [];
+
+
+    /* =====================================================
+       SEARCH RESTAURANTS
+    ===================================================== */
+
+    async function searchRestaurants() {
+
+        const location =
+            document
+            .getElementById("locationInput")
+            .value
+            .trim();
+
+
+        if (!location) {
+
+            alert(
+                "Please enter a city or place."
+            );
+
+            return;
+        }
+
+
+        document
+        .getElementById("loading")
+        .style.display = "block";
+
+
+        document
+        .getElementById("restaurantGrid")
+        .innerHTML = "";
+
+
+        document
+        .getElementById("locationText")
+        .textContent =
+        "Searching: " + location;
+
+
+        try {
+
+            /*
+             * First find the location using
+             * OpenStreetMap Nominatim.
+             */
+
+            const geoURL =
+                "https://nominatim.openstreetmap.org/search" +
+                "?format=json" +
+                "&limit=1" +
+                "&q=" +
+                encodeURIComponent(location);
+
+
+            const geoResponse =
+                await fetch(geoURL);
+
+
+            if (!geoResponse.ok) {
+                throw new Error(
+                    "Location search failed"
+                );
+            }
+
+
+            const geoData =
+                await geoResponse.json();
+
+
+            if (
+                !geoData ||
+                geoData.length === 0
+            ) {
+
+                throw new Error(
+                    "Location not found"
+                );
+
+            }
+
+
+            const latitude =
+                parseFloat(geoData[0].lat);
+
+
+            const longitude =
+                parseFloat(geoData[0].lon);
+
+
+            /*
+             * Search restaurants around
+             * the selected location.
+             */
+
+            const radius = 10000;
+
+
+            const overpassQuery = `
+                [out:json][timeout:25];
+
+                (
+                    node["amenity"="restaurant"]
+                    (around:${radius},${latitude},${longitude});
+
+                    way["amenity"="restaurant"]
+                    (around:${radius},${latitude},${longitude});
+
+                    relation["amenity"="restaurant"]
+                    (around:${radius},${latitude},${longitude});
+                );
+
+                out center tags;
+            `;
+
+
+            const overpassURL =
+                "https://overpass-api.de/api/interpreter?data=" +
+                encodeURIComponent(
+                    overpassQuery
+                );
+
+
+            const restaurantResponse =
+                await fetch(overpassURL);
+
+
+            if (!restaurantResponse.ok) {
+
+                throw new Error(
+                    "Restaurant service unavailable"
+                );
+
+            }
+
+
+            const restaurantData =
+                await restaurantResponse.json();
+
+
+            restaurantResults =
+                restaurantData.elements
+                .filter(
+                    item =>
+                    item.tags &&
+                    item.tags.name
+                )
+                .slice(0, 40)
+                .map(
+                    (item, index) => {
+
+                        let lat =
+                            item.lat;
+
+                        let lon =
+                            item.lon;
+
+
+                        if (
+                            !lat &&
+                            item.center
+                        ) {
+
+                            lat =
+                            item.center.lat;
+
+                            lon =
+                            item.center.lon;
+
+                        }
+
+
+                        return {
+
+                            id:
+                            "osm-" +
+                            index,
+
+                            name:
+                            item.tags.name,
+
+                            address:
+                            item.tags["addr:street"] ||
+                            item.tags["addr:city"] ||
+                            location,
+
+                            rating:
+                            "—",
+
+                            type:
+                            item.tags.cuisine ||
+                            "Restaurant",
+
+                            image:
+                            getRestaurantImage(
+                                index
+                            ),
+
+                            latitude:
+                            lat,
+
+                            longitude:
+                            lon
+
+                        };
+
+                    }
+                );
+
+
+            if (
+                restaurantResults.length === 0
+            ) {
+
+                showDemoRestaurants(
+                    location
+                );
+
+            }
+            else {
+
+                displayRestaurants(
+                    restaurantResults
+                );
+
+            }
+
+
+        }
+        catch (error) {
+
+            console.log(error);
+
+            /*
+             * If the public map/search service
+             * cannot be reached, keep the
+             * webpage functional using demo data.
+             */
+
+            showDemoRestaurants(
+                location
+            );
+
+        }
+        finally {
+
+            document
+            .getElementById("loading")
+            .style.display = "none";
+
+        }
+
+    }
+
+
+    /* =====================================================
+       DISPLAY DEMO RESTAURANTS
+    ===================================================== */
+
+    function showDemoRestaurants(location) {
+
+        restaurantResults =
+            demoRestaurants.map(
+                restaurant => ({
+
+                    ...restaurant,
+
+                    address:
+                    restaurant.address +
+                    " • " +
+                    location
+
+                })
+            );
+
+
+        displayRestaurants(
+            restaurantResults
+        );
+
+    }
+
+
+    /* =====================================================
+       RESTAURANT IMAGES
+    ===================================================== */
+
+    function getRestaurantImage(index) {
+
+        const images = [
+
+            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80",
+
+            "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=700&q=80",
+
+            "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=700&q=80",
+
+            "https://images.unsplash.com/photo-1579684947550-66e8b8d0e0d0?auto=format&fit=crop&w=700&q=80"
+
+        ];
+
+        return images[
+            index % images.length
+        ];
+
+    }
+
+
+    /* =====================================================
+       DISPLAY RESTAURANTS
+    ===================================================== */
+
+    function displayRestaurants(restaurants) {
+
+        const grid =
+            document.getElementById(
+                "restaurantGrid"
+            );
+
+
+        grid.innerHTML = "";
+
+
+        if (
+            restaurants.length === 0
+        ) {
+
+            grid.innerHTML = `
+                <div style="
+                    grid-column:1/-1;
+                    text-align:center;
+                    padding:40px;
+                ">
+                    <h2>
+                        No restaurants found
+                    </h2>
+
+                    <p>
+                        Try another city or place.
+                    </p>
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        restaurants.forEach(
+            restaurant => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "restaurant-card";
+
+
+                card.innerHTML = `
+
+                    <img
+                        class="restaurant-image"
+                        src="${restaurant.image}"
+                        alt="${escapeHTML(
+                            restaurant.name
+                        )}"
+                        onerror="
+                            this.src =
+                            'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80'
+                        "
+                    >
+
+                    <div class="restaurant-info">
+
+                        <h3>
+                            ${escapeHTML(
+                                restaurant.name
+                            )}
+                        </h3>
+
+                        <div class="rating">
+                            ⭐ ${restaurant.rating}
+                        </div>
+
+                        <p>
+                            🍽️ ${escapeHTML(
+                                restaurant.type
+                            )}
+                        </p>
+
+                        <p class="restaurant-address">
+                            📍 ${escapeHTML(
+                                restaurant.address
+                            )}
+                        </p>
+
+                        <button
+                            class="view-menu-btn"
+                            onclick="
+                                openRestaurantMenu(
+                                    '${restaurant.id}'
+                                )
+                            "
+                        >
+                            View Menu
+                        </button>
+
+                    </div>
+                `;
+
+
+                grid.appendChild(card);
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       OPEN RESTAURANT MENU
+    ===================================================== */
+
+    function openRestaurantMenu(id) {
+
+        currentRestaurant =
+            restaurantResults.find(
+                restaurant =>
+                String(restaurant.id) ===
+                String(id)
+            );
+
+
+        if (!currentRestaurant) {
+
+            return;
+
+        }
+
+
+        document
+        .getElementById(
+            "menuRestaurantName"
+        )
+        .textContent =
+        currentRestaurant.name;
+
+
+        document
+        .getElementById(
+            "menuRestaurantAddress"
+        )
+        .textContent =
+        "📍 " +
+        currentRestaurant.address;
+
+
+        document
+        .getElementById(
+            "menuModal"
+        )
+        .style.display = "block";
+
+
+        showCategory(
+            "Biryani",
+            document.querySelector(
+                ".category-btn"
+            )
+        );
+
+    }
+
+
+    /* =====================================================
+       SHOW FOOD CATEGORY
+    ===================================================== */
+
+    function showCategory(
+        category,
+        button
+    ) {
+
+        currentCategory =
+            category;
+
+
+        document
+        .querySelectorAll(
+            ".category-btn"
+        )
+        .forEach(
+            btn =>
+            btn.classList.remove(
+                "active"
+            )
+        );
+
+
+        if (button) {
+
+            button.classList.add(
+                "active"
+            );
+
+        }
+
+
+        const foodList =
+            document.getElementById(
+                "foodList"
+            );
+
+
+        foodList.innerHTML = "";
+
+
+        menuItems[
+            category
+        ].forEach(
+            (food, index) => {
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                item.className =
+                    "food-item";
+
+
+                item.innerHTML = `
+
+                    <h3>
+                        ${food.name}
+                    </h3>
+
+                    <div class="food-description">
+                        ${food.description}
+                    </div>
+
+                    <div class="food-bottom">
+
+                        <span class="price">
+                            ₹${food.price}
+                        </span>
+
+                        <button
+                            class="add-btn"
+                            onclick="
+                                addToCart(
+                                    ${index},
+                                    '${category}'
+                                )
+                            "
+                        >
+                            + Add
+                        </button>
+
+                    </div>
+
+                `;
+
+
+                foodList.appendChild(item);
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       ADD TO CART
+    ===================================================== */
+
+    function addToCart(
+        index,
+        category
+    ) {
+
+        const food =
+            menuItems[
+                category
+            ][index];
+
+
+        const existing =
+            cart.find(
+                item =>
+                item.name === food.name &&
+                item.restaurant ===
+                currentRestaurant.name
+            );
+
+
+        if (existing) {
+
+            existing.quantity++;
+
+        }
+        else {
+
+            cart.push({
+
+                name:
+                food.name,
+
+                price:
+                food.price,
+
+                quantity:
+                1,
+
+                restaurant:
+                currentRestaurant.name
+
+            });
+
+        }
+
+
+        updateCart();
+
+
+        showToast(
+            food.name +
+            " added to cart"
+        );
+
+    }
+
+
+    /* =====================================================
+       UPDATE CART
+    ===================================================== */
+
+    function updateCart() {
+
+        const cartItems =
+            document.getElementById(
+                "cartItems"
+            );
+
+
+        const cartCount =
+            document.getElementById(
+                "cartCount"
+            );
+
+
+        const cartTotal =
+            document.getElementById(
+                "cartTotal"
+            );
+
+
+        cartItems.innerHTML = "";
+
+
+        if (cart.length === 0) {
+
+            cartItems.innerHTML =
+            "<p>Your cart is empty.</p>";
+
+            cartTotal.textContent =
+            "Total: ₹0";
+
+            cartCount.textContent =
+            "0";
+
+            return;
+
+        }
+
+
+        let total = 0;
+
+        let count = 0;
+
+
+        cart.forEach(
+            (item, index) => {
+
+                const itemTotal =
+                    item.price *
+                    item.quantity;
+
+
+                total += itemTotal;
+
+                count +=
+                    item.quantity;
+
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                div.className =
+                    "cart-item";
+
+
+                div.innerHTML = `
+
+                    <div>
+
+                        <strong>
+                            ${escapeHTML(
+                                item.name
+                            )}
+                        </strong>
+
+                        <br>
+
+                        <small>
+                            ${escapeHTML(
+                                item.restaurant
+                            )}
+                        </small>
+
+                        <br>
+
+                        ₹${item.price}
+                        ×
+                        ${item.quantity}
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="quantity-controls">
+
+                            <button
+                                onclick="
+                                changeQuantity(
+                                    ${index},
+                                    -1
+                                )">
+                                −
+                            </button>
+
+                            <span>
+                                ${item.quantity}
+                            </span>
+
+                            <button
+                                onclick="
+                                changeQuantity(
+                                    ${index},
+                                    1
+                                )">
+                                +
+                            </button>
+
+                        </div>
+
+                        <br>
+
+                        <strong>
+                            ₹${itemTotal}
+                        </strong>
+
+                    </div>
+
+                `;
+
+
+                cartItems.appendChild(
+                    div
+                );
+
+            }
+        );
+
+
+        cartTotal.textContent =
+            "Total: ₹" +
+            total;
+
+
+        cartCount.textContent =
+            count;
+
+    }
+
+
+    /* =====================================================
+       CHANGE QUANTITY
+    ===================================================== */
+
+    function changeQuantity(
+        index,
+        amount
+    ) {
+
+        cart[index].quantity +=
+            amount;
+
+
+        if (
+            cart[index].quantity <= 0
+        ) {
+
+            cart.splice(
+                index,
+                1
+            );
+
+        }
+
+
+        updateCart();
+
+    }
+
+
+    /* =====================================================
+       CART
+    ===================================================== */
+
+    function openCart() {
+
+        document
+        .getElementById(
+            "cartPanel"
+        )
+        .classList.add("open");
+
+    }
+
+
+    function closeCart() {
+
+        document
+        .getElementById(
+            "cartPanel"
+        )
+        .classList.remove("open");
+
+    }
+
+
+    /* =====================================================
+       PLACE ORDER
+    ===================================================== */
+
+    function placeOrder() {
+
+        if (
+            cart.length === 0
+        ) {
+
+            alert(
+                "Your cart is empty."
+            );
+
+            return;
+
+        }
+
+
+        let total = 0;
+
+
+        cart.forEach(
+            item => {
+
+                total +=
+                    item.price *
+                    item.quantity;
+
+            }
+        );
+
+
+        alert(
+            "Order placed successfully!\n\n" +
+            "Total Amount: ₹" +
+            total +
+            "\n\nThank you for ordering."
+        );
+
+
+        cart = [];
+
+        updateCart();
+
+        closeCart();
+
+    }
+
+
+    /* =====================================================
+       BOOK TABLE
+    ===================================================== */
+
+    function openBooking() {
+
+        if (!currentRestaurant) {
+
+            return;
+
+        }
+
+
+        document
+        .getElementById(
+            "bookingRestaurant"
+        )
+        .textContent =
+        currentRestaurant.name;
+
+
+        document
+        .getElementById(
+            "bookingModal"
+        )
+        .style.display =
+        "block";
+
+
+        /*
+         * Set today's date as minimum date.
+         */
+
+        const today =
+            new Date()
+            .toISOString()
+            .split("T")[0];
+
+
+        document
+        .getElementById(
+            "bookingDate"
+        )
+        .min = today;
+
+    }
+
+
+    function bookTable(event) {
+
+        event.preventDefault();
+
+
+        const name =
+            document
+            .getElementById(
+                "customerName"
+            )
+            .value;
+
+
+        const date =
+            document
+            .getElementById(
+                "bookingDate"
+            )
+            .value;
+
+
+        const time =
+            document
+            .getElementById(
+                "bookingTime"
+            )
+            .value;
+
+
+        const people =
+            document
+            .getElementById(
+                "peopleCount"
+            )
+            .value;
+
+
+        alert(
+            "Table booked successfully! 🎉\n\n" +
+
+            "Restaurant: " +
+            currentRestaurant.name +
+            "\n" +
+
+            "Name: " +
+            name +
+            "\n" +
+
+            "Date: " +
+            date +
+            "\n" +
+
+            "Time: " +
+            time +
+            "\n" +
+
+            "People: " +
+            people
+        );
+
+
+        closeBooking();
+
+    }
+
+
+    /* =====================================================
+       CLOSE MODALS
+    ===================================================== */
+
+    function closeMenu() {
+
+        document
+        .getElementById(
+            "menuModal"
+        )
+        .style.display =
+        "none";
+
+    }
+
+
+    function closeBooking() {
+
+        document
+        .getElementById(
+            "bookingModal"
+        )
+        .style.display =
+        "none";
+
+    }
+
+
+    /* =====================================================
+       DARK MODE
+    ===================================================== */
+
+    function toggleDarkMode() {
+
+        document
+        .body
+        .classList
+        .toggle("dark");
+
+    }
+
+
+    /* =====================================================
+       TOAST MESSAGE
+    ===================================================== */
+
+    function showToast(message) {
+
+        const toast =
+            document.getElementById(
+                "toast"
+            );
+
+
+        toast.textContent =
+            message;
+
+
+        toast.style.display =
+            "block";
+
+
+        setTimeout(
+            function () {
+
+                toast.style.display =
+                    "none";
+
+            },
+            2000
+        );
+
+    }
+
+
+    /* =====================================================
+       SECURITY - TEXT ESCAPE
+    ===================================================== */
+
+    function escapeHTML(text) {
+
+        return String(text)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+
+    }
+
+
+    /* =====================================================
+       ENTER KEY SEARCH
+    ===================================================== */
+
+    document
+    .getElementById(
+        "locationInput"
+    )
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key ===
+                "Enter"
+            ) {
+
+                event.preventDefault();
+
+                searchRestaurants();
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       CLOSE MODAL WHEN CLICKING OUTSIDE
+    ===================================================== */
+
+    window.addEventListener(
+        "click",
+        function(event) {
+
+            const menuModal =
+                document.getElementById(
+                    "menuModal"
+                );
+
+            const bookingModal =
+                document.getElementById(
+                    "bookingModal"
+                );
+
+
+            if (
+                event.target ===
+                menuModal
+            ) {
+
+                closeMenu();
+
+            }
+
+
+            if (
+                event.target ===
+                bookingModal
+            ) {
+
+                closeBooking();
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       INITIAL DEMO RESTAURANTS
+    ===================================================== */
+
+    displayRestaurants(
+        demoRestaurants
+    );
+
+</script>
+
+</body>
+</html>

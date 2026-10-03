@@ -1,0 +1,595 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mobile and Email OTP Login</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #00897b, #8bc34a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .box {
+            background: white;
+            width: 350px;
+            max-width: 90%;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px #555;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            color: #00897b;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #00897b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #00695c;
+        }
+
+        .option {
+            display: none;
+        }
+
+        #status {
+            overflow-wrap: anywhere;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <h2>Login / Sign Up</h2>
+
+    <p>Select your login method</p>
+
+    <button onclick="showMobile()">
+        Login with Mobile Number
+    </button>
+
+    <button onclick="showEmail()">
+        Login with Gmail
+    </button>
+
+
+    <!-- MOBILE LOGIN -->
+
+    <div id="mobileSection" class="option">
+
+        <h3>Mobile Login</h3>
+
+        <input
+            type="tel"
+            id="phone"
+            placeholder="10-digit Indian mobile number"
+            maxlength="10"
+        >
+
+        <button id="sendSmsBtn" onclick="sendSMS()">
+            Send SMS OTP
+        </button>
+
+        <div id="recaptcha-container"></div>
+
+        <div id="smsVerifySection" class="hidden">
+
+            <input
+                type="text"
+                id="smsOTP"
+                placeholder="Enter SMS OTP"
+                maxlength="6"
+                inputmode="numeric"
+            >
+
+            <button onclick="verifySMS()">
+                Verify SMS OTP
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- EMAIL LOGIN -->
+
+    <div id="emailSection" class="option">
+
+        <h3>Gmail Login</h3>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter your Gmail address"
+        >
+
+        <button onclick="sendEmailLink()">
+            Send Login Link to Gmail
+        </button>
+
+        <p style="font-size:13px">
+            Open the sign-in link sent to your Gmail
+            to complete login.
+        </p>
+
+    </div>
+
+
+    <!-- LOGIN SUCCESS -->
+
+    <div id="successSection" class="hidden">
+
+        <h3 style="color:green">
+            Login Successful!
+        </h3>
+
+        <p id="userDetails"></p>
+
+        <button onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+    <p id="status"></p>
+
+</div>
+
+
+<script type="module">
+
+    // Firebase imports
+
+    import {
+        initializeApp
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
+    import {
+        getAuth,
+        RecaptchaVerifier,
+        signInWithPhoneNumber,
+        sendSignInLinkToEmail,
+        isSignInWithEmailLink,
+        signInWithEmailLink,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+
+    // ===================================
+    // FIREBASE CONFIGURATION
+    // ===================================
+
+    const firebaseConfig = {
+
+        apiKey: "YOUR_API_KEY",
+
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+
+        projectId: "YOUR_PROJECT_ID",
+
+        storageBucket: "YOUR_STORAGE_BUCKET",
+
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+
+        appId: "YOUR_APP_ID"
+
+    };
+
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+
+    let confirmationResult = null;
+
+    let recaptchaVerifier = null;
+
+    let recaptchaWidgetId = null;
+
+
+    // ===================================
+    // SHOW LOGIN OPTIONS
+    // ===================================
+
+    window.showMobile = function () {
+
+        document.getElementById("mobileSection")
+            .style.display = "block";
+
+        document.getElementById("emailSection")
+            .style.display = "none";
+
+        showStatus("");
+
+    };
+
+
+    window.showEmail = function () {
+
+        document.getElementById("emailSection")
+            .style.display = "block";
+
+        document.getElementById("mobileSection")
+            .style.display = "none";
+
+        showStatus("");
+
+    };
+
+
+    function showStatus(message, color = "black") {
+
+        const status = document.getElementById("status");
+
+        status.innerText = message;
+
+        status.style.color = color;
+
+    }
+
+
+    // ===================================
+    // MOBILE LOGIN - SEND REAL SMS OTP
+    // ===================================
+
+    async function setupRecaptcha() {
+
+        if (!recaptchaVerifier) {
+
+            recaptchaVerifier = new RecaptchaVerifier(
+                auth,
+                "recaptcha-container",
+                {
+                    size: "normal"
+                }
+            );
+
+            recaptchaWidgetId =
+                await recaptchaVerifier.render();
+
+        }
+
+    }
+
+
+    window.sendSMS = async function () {
+
+        const phone =
+            document.getElementById("phone").value.trim();
+
+        if (!/^[6-9][0-9]{9}$/.test(phone)) {
+
+            showStatus(
+                "Enter a valid 10-digit Indian mobile number.",
+                "red"
+            );
+
+            return;
+
+        }
+
+        try {
+
+            showStatus("Sending SMS OTP...", "blue");
+
+            document.getElementById("sendSmsBtn").disabled = true;
+
+            await setupRecaptcha();
+
+            const fullPhone = "+91" + phone;
+
+            confirmationResult =
+                await signInWithPhoneNumber(
+                    auth,
+                    fullPhone,
+                    recaptchaVerifier
+                );
+
+            document.getElementById("smsVerifySection")
+                .classList.remove("hidden");
+
+            showStatus(
+                "Real OTP sent to " + fullPhone,
+                "green"
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            showStatus(error.message, "red");
+
+        } finally {
+
+            document.getElementById("sendSmsBtn").disabled = false;
+
+        }
+
+    };
+
+
+    // ===================================
+    // VERIFY SMS OTP
+    // ===================================
+
+    window.verifySMS = async function () {
+
+        const otp =
+            document.getElementById("smsOTP").value.trim();
+
+        if (!confirmationResult) {
+
+            showStatus("Please send OTP first.", "red");
+
+            return;
+
+        }
+
+        if (!/^[0-9]{6}$/.test(otp)) {
+
+            showStatus("Enter the 6-digit SMS OTP.", "red");
+
+            return;
+
+        }
+
+        try {
+
+            const result =
+                await confirmationResult.confirm(otp);
+
+            showSuccess(result.user);
+
+        } catch (error) {
+
+            console.error(error);
+
+            showStatus(
+                "Invalid OTP: " + error.message,
+                "red"
+            );
+
+        }
+
+    };
+
+
+    // ===================================
+    // EMAIL LOGIN - SEND REAL EMAIL LINK
+    // ===================================
+
+    window.sendEmailLink = async function () {
+
+        const email =
+            document.getElementById("email").value.trim();
+
+        if (!/^[^\s@]+@gmail\.com$/i.test(email)) {
+
+            showStatus(
+                "Please enter a valid Gmail address.",
+                "red"
+            );
+
+            return;
+
+        }
+
+        try {
+
+            showStatus("Sending login link to Gmail...", "blue");
+
+            const actionCodeSettings = {
+
+                // Link returns to this hosted webpage
+
+                url: window.location.origin +
+                     window.location.pathname,
+
+                handleCodeInApp: true
+
+            };
+
+            await sendSignInLinkToEmail(
+                auth,
+                email,
+                actionCodeSettings
+            );
+
+            // Remember email on this browser
+
+            window.localStorage.setItem(
+                "emailForSignIn",
+                email
+            );
+
+            showStatus(
+                "Login link sent to " + email +
+                ". Check your Gmail inbox.",
+                "green"
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            showStatus(
+                "Email error: " + error.message,
+                "red"
+            );
+
+        }
+
+    };
+
+
+    // ===================================
+    // COMPLETE EMAIL LOGIN
+    // ===================================
+
+    async function completeEmailLogin() {
+
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+
+            let email =
+                window.localStorage.getItem("emailForSignIn");
+
+            if (!email) {
+
+                email = window.prompt(
+                    "Enter the email address where you received the link:"
+                );
+
+            }
+
+            if (!email) {
+
+                showStatus("Email address is required.", "red");
+
+                return;
+
+            }
+
+            try {
+
+                const result =
+                    await signInWithEmailLink(
+                        auth,
+                        email,
+                        window.location.href
+                    );
+
+                window.localStorage.removeItem(
+                    "emailForSignIn"
+                );
+
+                // Remove sign-in parameters from URL
+
+                window.history.replaceState(
+                    {},
+                    document.title,
+                    window.location.pathname
+                );
+
+                showSuccess(result.user);
+
+            } catch (error) {
+
+                console.error(error);
+
+                showStatus(
+                    "Email verification failed: " +
+                    error.message,
+                    "red"
+                );
+
+            }
+
+        }
+
+    }
+
+
+    // ===================================
+    // DISPLAY LOGIN DETAILS
+    // ===================================
+
+    function showSuccess(user) {
+
+        document.getElementById("mobileSection")
+            .style.display = "none";
+
+        document.getElementById("emailSection")
+            .style.display = "none";
+
+        document.getElementById("recaptcha-container")
+            .classList.add("hidden");
+
+        document.getElementById("successSection")
+            .classList.remove("hidden");
+
+        document.getElementById("userDetails").innerText =
+            "Login method: " +
+            (user.phoneNumber || user.email) +
+            "\nFirebase UID: " + user.uid;
+
+        showStatus("You are logged in!", "green");
+
+    }
+
+
+    // ===================================
+    // LOGOUT
+    // ===================================
+
+    window.logout = async function () {
+
+        try {
+
+            await signOut(auth);
+
+            document.getElementById("successSection")
+                .classList.add("hidden");
+
+            document.getElementById("mobileSection")
+                .style.display = "block";
+
+            document.getElementById("recaptcha-container")
+                .classList.remove("hidden");
+
+            showStatus("Logged out successfully.");
+
+        } catch (error) {
+
+            showStatus(error.message, "red");
+
+        }
+
+    };
+
+
+    // Check if user opened an email sign-in link
+
+    completeEmailLogin();
+
+</script>
+
+</body>
+</html>

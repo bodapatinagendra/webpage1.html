@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pallevelugu Live - Track Your Bus</title>
+
+    <!-- Leaflet CSS for Map rendering -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --text-color: #1e293b;
+            --header-bg: rgba(15, 23, 42, 0.95);
+            --nav-bg: #1e293b;
+            --input-bg: #ffffff;
+            --input-text: #0f172a;
+            --modal-bg: #ffffff;
+            --table-border: #cbd5e1;
+            --accent-blue: #2563eb;
+            --chip-bg: #e2e8f0;
+            --chip-text: #1e293b;
+        }
+
+        body.dark-mode {
+            --bg-color: #090d16;
+            --card-bg: rgba(30, 41, 59, 0.95);
+            --text-color: #f8fafc;
+            --header-bg: rgba(15, 23, 42, 0.98);
+            --nav-bg: #0f172a;
+            --input-bg: #1e293b;
+            --input-text: #ffffff;
+            --modal-bg: #1e293b;
+            --table-border: #334155;
+            --accent-blue: #3b82f6;
+            --chip-bg: #334155;
+            --chip-text: #f8fafc;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)),
+                        url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1920&q=80'); 
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            animation: fadeIn 1s ease-in-out;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.2s ease-in-out;
+            position: relative;
+            backdrop-filter: blur(8px);
+        }
+
+        header h1, header h4 {
+            margin: 5px 0;
+        }
+
+        header h1 {
+            letter-spacing: 1.5px;
+            color: #60a5fa;
+        }
+
+        .header-logo {
+            float: right;
+            width: 75px;
+            height: 75px;
+            margin-left: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .header-logo:hover {
+            transform: rotate(5deg) scale(1.05);
+        }
+
+        nav {
+            background-color: var(--nav-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        nav ul li {
+            position: relative;
+        }
+
+        nav ul li a, nav ul li button {
+            display: block;
+            color: #f1f5f9;
+            padding: 14px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        nav ul li a:hover, nav ul li button:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #60a5fa;
+        }
+
+        /* Profile Container Positioned at Far Left */
+        .profile-container {
+            position: relative;
+            margin-right: auto;
+        }
+
+        .profile-btn {
+            background: none;
+            border: none;
+            color: #f1f5f9;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .profile-btn:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #60a5fa;
+        }
+
+        .profile-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid white;
+        }
+
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: var(--modal-bg);
+            min-width: 260px;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.4);
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            z-index: 2005;
+            color: var(--text-color);
+            text-align: left;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        .profile-dropdown-header {
+            padding: 15px;
+            background-color: var(--accent-blue);
+            color: white;
+            text-align: center;
+        }
+
+        .profile-dropdown-header img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+            border: 2px solid white;
+            object-fit: cover;
+        }
+
+        .profile-info-list {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        .profile-info-list p {
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .profile-menu-links button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            text-align: left;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+
+        .profile-menu-links button:hover {
+            background-color: rgba(37, 99, 235, 0.15);
+        }
+
+        /* Three Dots Menu Styling */
+        .three-dots-btn {
+            font-size: 1.6rem !important;
+            padding: 10px 18px !important;
+            line-height: 1;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: var(--modal-bg);
+            min-width: 180px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
+            border-radius: 0 0 6px 6px;
+            z-index: 1001;
+            overflow: hidden;
+        }
+
+        .dropdown-content button {
+            color: var(--text-color);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            text-align: left;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+        }
+
+        .dropdown-content button:hover {
+            background-color: rgba(37, 99, 235, 0.15);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .center-img {
+            display: block;
+            margin: 20px auto;
+            border-radius: 12px;
+            max-width: 90%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            margin-bottom: 25px;
+            animation: slideUp 0.8s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: var(--input-bg);
+            color: var(--input-text);
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--accent-blue);
+            outline: none;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #1d4ed8;
+            transform: scale(1.01);
+        }
+
+        /* Recent Searches UI Styling */
+        .recent-searches-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--table-border);
+            display: none;
+        }
+
+        .recent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .recent-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+        }
+
+        .recent-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .search-chip {
+            background-color: var(--chip-bg);
+            color: var(--chip-text);
+            border: 1px solid var(--table-border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-chip:hover {
+            background-color: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+            transform: translateY(-1px);
+        }
+
+
+        /* Live pickup/drop-off autocomplete results */
+        .form-group { position: relative; }
+
+        .stop-help {
+            display: block;
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 0.78rem;
+        }
+        .stop-suggestions {
+            display: none;
+            position: absolute;
+            top: calc(100% - 14px);
+            left: 0;
+            right: 0;
+            max-height: 250px;
+            overflow-y: auto;
+            background: var(--modal-bg);
+            color: var(--text-color);
+            border: 1px solid var(--table-border);
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 8px 18px rgba(0,0,0,.22);
+            z-index: 2500;
+        }
+        .stop-suggestions.show { display: block; }
+        .stop-suggestion-item {
+            display: block;
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid var(--table-border);
+            padding: 11px 12px;
+            text-align: left;
+            background: transparent;
+            color: var(--text-color);
+            font: inherit;
+            cursor: pointer;
+        }
+        .stop-suggestion-item:hover, .stop-suggestion-item:focus {
+            background: rgba(37,99,235,.14);
+            outline: none;
+        }
+        .stop-suggestion-empty {
+            padding: 12px;
+            color: var(--text-color);
+            opacity: .75;
+            font-size: .9rem;
+        }
+        .stop-match-count {
+            padding: 7px 12px;
+            font-size: .78rem;
+            opacity: .7;
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        .timetable-section {
+            margin-top: 20px;
+            display: none;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .timetable-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--table-border);
+        }
+
+        .timetable-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .timetable-table th, .timetable-table td {
+            border: 1px solid var(--table-border);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .timetable-table th {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status-on-time { background-color: #10b981; }
+        .status-upcoming { background-color: #f59e0b; color: #fff; }
+
+        #map-container {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            animation: slideUp 1s ease-out;
+            transition: background 0.4s ease;
+        }
+
+        #map {
+            width: 100%;
+            height: 450px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #e8edf2;
+        }
+
+        .map-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .map-actions a, .map-actions button {
+            display: inline-block;
+            padding: 10px 16px;
+            background: var(--accent-blue);
+            color: #fff;
+            border: 0;
+            border-radius: 6px;
+            text-decoration: none;
+            font: inherit;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .map-actions a:hover, .map-actions button:hover {
+            background: #1d4ed8;
+        }
+
+        #map-status {
+            margin-top: 8px;
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: .9rem;
+            display: none;
+            background: #fff3cd;
+            color: #664d03;
+        }
+
+        /* Enhanced Route Metrics Display */
+        #route-info {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            border: 1px solid var(--accent-blue);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .metric-card {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 3px;
+        }
+
+        .metric-value {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--text-color);
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .close-btn {
+            color: #94a3b8;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #ef4444;
+        }
+
+        .emergency-btn {
+            background-color: #ef4444;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .emergency-btn:hover {
+            background-color: #dc2626;
+        }
+
+        main {
+            text-align: center;
+            background: rgba(15, 23, 42, 0.95);
+            color: #f8fafc;
+            padding: 25px 20px;
+            margin-top: 30px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-socials {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-socials a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .footer-socials a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+            }
+            nav ul {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+            nav ul li a, nav ul li button, .profile-btn {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            #route-info {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="rtclogo.png" alt="RTC Logo" class="header-logo" onerror="this.style.display='none'">
+        <h1>PALLEVELUGU LIVE</h1>
+        <h4>KNOW YOUR BUS, PLAN YOUR JOURNEY</h4>
+    </header>
+
+    <nav>
+        <ul>
+            <!-- Profile Option at Extreme Left -->
+            <li class="profile-container">
+                <button type="button" class="profile-btn" onclick="toggleProfileDropdown()">
+                    <img id="nav-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile" class="profile-avatar">
+                    <span id="nav-user-name">Account ▼</span>
+                </button>
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <div class="profile-dropdown-header">
+                        <img id="dropdown-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile Pic">
+                        <h4 style="margin: 0;" id="display-name">B. Nagendra</h4>
+                        <span style="font-size: 0.8rem; opacity: 0.9;">Passenger Pass ID: #RTC9876</span>
+                    </div>
+                    <div class="profile-info-list">
+                        <p><strong>Age:</strong> <span id="display-age">26 Years</span></p>
+                        <p><strong>Sex:</strong> <span id="display-sex">Male</span></p>
+                        <p><strong>Mobile:</strong> <span id="display-mobile">+91 98765 43210</span></p>
+                        <p><strong>Email:</strong> <span id="display-email">nagendrabodapati2007@gmail.com</span></p>
+                    </div>
+                    <div class="profile-menu-links">
+                        <button type="button" onclick="openEditProfileModal(); toggleProfileDropdown();">✏️ Edit Profile</button>
+                        <button type="button" onclick="openModal('login-modal'); toggleProfileDropdown();">🔑 Login / Register</button>
+                        <button type="button" onclick="openModal('enquiry-modal'); toggleProfileDropdown();">📞 Contact Us</button>
+                        <button type="button" onclick="openModal('refer-modal'); toggleProfileDropdown();">🎁 Refer Someone</button>
+                    </div>
+                </div>
+            </li>
+		<li><a href="otp.html" onclick="openmodal(); return false;">login</a></li>
+            <li><a href="#" onclick="showHome(); return false;">Home</a></li>
+            <li><a href="#" onclick="openModal('enquiry-modal'); return false;">Enquiry</a></li>
+            <li><a href="logistics.html" onclick="openModal(); return false;">Logistics</a></li>
+            <li><a href="food1.html" onclick="openFoodModal(); return false;">🍴 Food</a></li>
+
+            <!-- Three Dots Symbol (⋮) representing Settings -->
+            <li class="dropdown">
+                <button type="button" class="three-dots-btn" aria-label="Settings Menu">⋮</button>
+                <div class="dropdown-content">
+                    <button type="button" onclick="toggleTheme('light')">☀️ Light Mode</button>
+                    <button type="button" onclick="toggleTheme('dark')">🌙 Dark Mode</button>
+                    <button type="button" onclick="openModal('help-modal')">❓ Help</button>
+                    <button type="button" onclick="openModal('emergency-modal')" style="color: #ef4444; font-weight: bold;">🚨 Emergency</button>
+                    <button type="button" onclick="openModal('complaint-modal')">📝 Complaint</button>
+                </div>
+            </li>
+        </ul>
+    </nav>
+<div class="rtc-updates">
+    <span class="update-label">🔔 LATEST RTC UPDATES</span>
+
+    <marquee behavior="scroll"
+             direction="left"
+             scrollamount="5"
+             onmouseover="this.stop();"
+             onmouseout="this.start();">
+
+        <a href="https://www.apsrtc.ap.gov.in/"
+           target="_blank">
+           📢 APSRTC Official Website – Bus Services & Notifications
+        </a>
+
+        &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;
+
+        <a href="https://www.apsrtc.ap.gov.in/"
+           target="_blank">
+           🚌 Check RTC Bus Timings and Reservations
+        </a>
+
+        &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;
+
+        <a href="https://www.apsrtc.ap.gov.in/"
+           target="_blank">
+           📦 APSRTC Parcel and Courier Services
+        </a>
+
+        &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;
+
+        <a href="https://www.apsrtc.ap.gov.in/"
+           target="_blank">
+           📍 Bus Tracking and Passenger Services
+        </a>
+
+    </marquee>
+</div>
+
+<style>
+.rtc-updates {
+    display: flex;
+    align-items: center;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    overflow: hidden;
+    height: 50px;
+}
+
+.update-label {
+    background: #c62828;
+    color: white;
+    padding: 16px 12px;
+    font-weight: bold;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.rtc-updates marquee {
+    flex: 1;
+    padding: 12px;
+}
+
+.rtc-updates a {
+    color: #073b74;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.rtc-updates a:hover {
+    color: #c62828;
+    text-decoration: underline;
+}
+</style>
+
+    <img src="https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1200&q=80" alt="RTC Bus Banner" style="width: 750px; height:320px; object-fit: cover;" class="center-img">
+
+    <div class="container">
+        <!-- Search Form Card -->
+        <div class="card" id="search-card">
+            <form id="bus-route-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="state-select">State:</label>
+                        <select id="state-select" name="state" required>
+                            <option value="">Select State</option>
+                            <option value="TS" selected>Telangana</option>
+                            <option value="AP">Andhra Pradesh</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="district-select">District:</label>
+                        <select id="district-select" name="district" required>
+                            <option value="">Select District</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pickup-input">From (Pickup Stop):</label>
+                        <input type="text" id="pickup-input" name="pickup" list="pickup-bus-stops" placeholder="Type pickup stop name..." autocomplete="off" required>
+                        <datalist id="pickup-bus-stops"></datalist>
+                        <div class="stop-suggestions" id="pickup-suggestions" role="listbox" aria-label="Pickup stop matches"></div>
+                        <small class="stop-help">Click the box to see all city/bus stops in the selected district.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dropoff-input">To (Drop-off Stop):</label>
+                        <input type="text" id="dropoff-input" name="dropoff" list="dropoff-bus-stops" placeholder="Type drop-off stop name..." autocomplete="off" required>
+                        <datalist id="dropoff-bus-stops"></datalist>
+                        <div class="stop-suggestions" id="dropoff-suggestions" role="listbox" aria-label="Drop-off stop matches"></div>
+                        <small class="stop-help">Type a city or stop name to filter the dropdown.</small>
+                    </div>
+                </div>
+
+                <!-- Date & Time Selector -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="journey-date">Date of Journey:</label>
+                        <input type="date" id="journey-date" name="journey_date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="journey-time">Preferred Time:</label>
+                        <input type="time" id="journey-time" name="journey_time" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Search Route & Check Timings</button>
+            </form>
+
+            <!-- Recent Searches Section -->
+            <div class="recent-searches-container" id="recent-searches-container">
+                <div class="recent-header">
+                    <span class="recent-title">🕒 Recent Searches</span>
+                    <button class="clear-btn" onclick="clearRecentSearches()">Clear All</button>
+                </div>
+                <div class="recent-chips" id="recent-chips"></div>
+            </div>
+        </div>
+
+        <!-- Bus Timings Schedule Card -->
+        <div class="card timetable-section" id="timetable-card">
+            <div class="timetable-header-info">
+                <h3 style="margin: 0; color: var(--accent-blue);">Available Bus Timings</h3>
+                <div>
+                    <span id="current-date-display" style="font-weight: bold; margin-right: 15px;">📅 Date: --</span>
+                    <span id="available-buses-count" style="font-weight: bold; color: #10b981;">🚌 Available Buses: 0</span>
+                </div>
+            </div>
+            <table class="timetable-table">
+                <thead>
+                    <tr>
+                        <th>Bus Service</th>
+                        <th>Departure</th>
+                        <th>Expected Arrival</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="timetable-rows"></tbody>
+            </table>
+        </div>
+
+        <!-- Live Route Map Card -->
+        <div id="map-container">
+            <div id="map"></div>
+            <div class="map-actions">
+                <button type="button" onclick="resetMapView()">Reset Map</button>
+                <a id="google-maps-link" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">Open Route in Google Maps</a>
+                <a id="apple-maps-link" href="https://maps.apple.com/" target="_blank" rel="noopener noreferrer">Open Route in Apple Maps</a>
+            </div>
+            <div id="map-status" role="status" aria-live="polite"></div>
+            <div id="route-info"></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('edit-profile-modal')">&times;</span>
+            <h2 style="color: var(--accent-blue);">Edit Profile Details</h2>
+            <form id="edit-profile-form" onsubmit="saveProfileChanges(event)">
+                <div class="form-group">
+                    <label for="edit-name">Full Name:</label>
+                    <input type="text" id="edit-name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-age">Age:</label>
+                        <input type="number" id="edit-age" min="1" max="120" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-sex">Sex:</label>
+                        <select id="edit-sex" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-mobile">Mobile Number:</label>
+                    <input type="tel" id="edit-mobile" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email Address:</label>
+                    <input type="email" id="edit-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-avatar">Profile Picture URL:</label>
+                    <input type="url" id="edit-avatar" required>
+                </div>
+                <button type="submit" class="submit-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('login-modal')">&times;</span>
+            <h2 style="color: var(--accent-blue);">Passenger Login</h2>
+            <form onsubmit="handleModalSubmit(event, 'Logged in successfully!')">
+                <div class="form-group">
+                    <label>Mobile Number / Email:</label>
+                    <input type="text" placeholder="Enter mobile number or email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password / OTP:</label>
+                    <input type="password" placeholder="Enter password or OTP" required>
+                </div>
+                <button type="submit" class="submit-btn">Login to Account</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="refer-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('refer-modal')">&times;</span>
+            <h2 style="color: var(--accent-blue);">Refer a Friend & Earn Travel Credits</h2>
+            <p>Invite your friends to use Pallevelugu Live and earn ₹50 discount vouchers for your bus passes.</p>
+            <form onsubmit="handleModalSubmit(event, 'Referral link sent successfully!')">
+                <div class="form-group">
+                    <label>Friend's Mobile Number or Email:</label>
+                    <input type="text" placeholder="Enter contact info" required>
+                </div>
+                <button type="submit" class="submit-btn">Send Invitation Link</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="enquiry-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('enquiry-modal')">&times;</span>
+            <h2 style="color: var(--accent-blue);">General Bus Enquiry / Contact Us</h2>
+            <form onsubmit="handleModalSubmit(event, 'Enquiry submitted successfully! Our representative will respond shortly.')">
+                <div class="form-group">
+                    <label>Passenger Name:</label>
+                    <input type="text" placeholder="Enter full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone / Email:</label>
+                    <input type="text" placeholder="Contact number or email" required>
+                </div>
+                <div class="form-group">
+                    <label>Enquiry Details:</label>
+                    <textarea rows="4" placeholder="Ask about routes, passes, fares, or timings..." required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Submit Enquiry</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="logistics-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('logistics-modal')">&times;</span>
+            <h2 style="color: var(--accent-blue);">Cargo & Parcel Logistics Services</h2>
+            <p>Track or send parcels securely through APSRTC / TGSRTC Bus Cargo Networks.</p>
+            <form onsubmit="handleModalSubmit(event, 'Parcel tracking details sent via SMS!')">
+                <div class="form-group">
+                    <label>Tracking / AWB Number:</label>
+                    <input type="text" placeholder="e.g. LR-987654321" required>
+                </div>
+                <div class="form-group">
+                    <label>Mobile Number:</label>
+                    <input type="tel" placeholder="10-digit mobile number" required>
+                </div>
+                <button type="submit" class="submit-btn">Track Cargo Status</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('help-modal')">&times;</span>
+            <h2 style="color: var(--accent-blue);">Help & Support Center</h2>
+            <p><strong>How to track your bus:</strong></p>
+            <ol>
+                <li>Select your State and District.</li>
+                <li>Pick your journey Pickup and Drop-off stops from the provided district options.</li>
+                <li>Set your preferred Date and Departure Time.</li>
+                <li>Click <strong>'Search Route & Check Timings'</strong>.</li>
+            </ol>
+            <p><strong>24/7 RTC Customer Care:</strong> 0866-2570005 / 040-69440000</p>
+        </div>
+    </div>
+
+            <div style="margin-top:18px;padding:12px;background:rgba(37,99,235,.08);border:1px solid var(--accent-blue);border-radius:8px;">
+                <strong>Journey:</strong> <span id="food-route-display">Select pickup and drop-off stops first.</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="emergency-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('emergency-modal')">&times;</span>
+            <h2 style="color: #ef4444;">🚨 Emergency Assistance</h2>
+            <p>If you face any safety issues or medical emergencies during travel, use the quick contacts below:</p>
+            <button class="emergency-btn" onclick="window.location.href='tel:108'">📞 Call Medical Emergency (108)</button>
+            <button class="emergency-btn" style="background-color: #2563eb;" onclick="window.location.href='tel:100'">👮 Call Police Helpline (100)</button>
+            <button class="emergency-btn" style="background-color: #d97706;" onclick="window.location.href='tel:18004255425'">🚌 RTC Women Safety Line (1800-425-5425)</button>
+        </div>
+    </div>
+
+    <div id="complaint-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('complaint-modal')">&times;</span>
+            <h2 style="color: #ef4444;">Register a Grievance / Complaint</h2>
+            <form onsubmit="handleModalSubmit(event, 'Grievance submitted successfully. Your reference ID is #RTC' + Math.floor(100000 + Math.random() * 900000))">
+                <div class="form-group">
+                    <label>Bus Number / Route:</label>
+                    <input type="text" placeholder="e.g. AP 39 Z 1234 or Hyderabad-Warangal" required>
+                </div>
+                <div class="form-group">
+                    <label>Complaint Type:</label>
+                    <select required>
+                        <option value="">Select Category</option>
+                        <option>Bus Delay / Timing Issue</option>
+                        <option>Driver / Conductor Behavior</option>
+                        <option>Cleanliness & Hygiene</option>
+                        <option>Overcharging / Ticket Error</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea rows="3" placeholder="Provide details of your grievance..." required></textarea>
+                </div>
+                <button type="submit" class="submit-btn" style="background-color: #ef4444;">Submit Complaint</button>
+            </form>
+        </div>
+    </div>
+
+    <main>
+        THIS WEBSITE CONNECTS TO BUSES AND TRACKS APSRTC & TGSRTC BUSES TO SHOW CURRENT LOCATIONS.<br>
+        DEVELOPED BY <strong>B. NAGENDRA</strong>
+        <div class="footer-socials">
+            <span>📷 Instagram: <a href="https://instagram.com/_nanix_05_" target="_blank">_nanix_05_</a></span>
+            <span>📘 Facebook: <a href="https://facebook.com" target="_blank">Bodapati Nagendra</a></span>
+            <span>✉️ Email: <a href="mailto:nagendrabodapati2007@gmail.com">nagendrabodapati2007@gmail.com</a></span>
+        </div>
+    </main>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const districtData = {
+            "TS": [
+                "Hyderabad", "Hanamkonda", "Warangal", "Karimnagar", "Khammam", 
+                "Nizamabad", "Nalgonda", "Rangareddy", "Medak", "Sangareddy",
+                "Adilabad", "Bhadradri Kothagudem", "Jagtial", "Jangaon", 
+                "Jayashankar Bhupalpally", "Jogulamba Gadwal", "Kamareddy", 
+                "Kumuram Bheem", "Mahabubabad", "Mahbubnagar", "Mancherial", 
+                "Medchal-Malkajgiri", "Mulugu", "Nagarkurnool", "Narayanpet", 
+                "Nirmal", "Peddapalli", "Rajanna Sircilla", "Siddipet", 
+                "Suryapet", "Vikarabad", "Wanaparthy", "Yadadri Bhuvanagiri"
+            ],
+            "AP": [
+                "West Godavari", "East Godavari", "Eluru", "Krishna", "NTR", 
+                "Guntur", "Visakhapatnam", "Tirupati", "Chittoor", "Kurnool",
+                "Alluri Sitharama Raju", "Anakapalli", "Ananthapuramu", "Annamayya", 
+                "Bapatla", "Kakinada", "Konaseema", "Nandyal", "Palnadu", 
+                "Parvathipuram Manyam", "Prakasam", "Srikakulam", "Sri Potti Sriramulu Nellore", 
+                "Sri Sathya Sai", "Vizianagaram", "YSR Kadapa"
+            ]
+        };
+
+        /*
+         * Bus-stop data.
+         * The first entries keep the detailed stop coordinates already present in the project.
+         * For the remaining districts, major cities/towns are listed and converted into
+         * searchable bus-stop entries. These are planning/demo entries, not an official
+         * exhaustive APSRTC/TGSRTC stop database.
+         */
+        const districtBusStops = {
+            "Hyderabad": [
+                { name: "Hyderabad - Mahatma Gandhi Bus Station (MGBS)", coords: [17.3780, 78.4840] },
+                { name: "Hyderabad - Jubilee Bus Station (JBS Secunderabad)", coords: [17.4436, 78.4983] },
+                { name: "Hyderabad - Ameerpet Bus Stop", coords: [17.4375, 78.4482] },
+                { name: "Hyderabad - Kukatpally Bus Depot", coords: [17.4849, 78.4138] },
+                { name: "Hyderabad - LB Nagar Bus Stop", coords: [17.3524, 78.5484] }
+            ],
+            "Hanamkonda": [
+                { name: "Hanamkonda - Hanamkonda Bus Station", coords: [18.0076, 79.5539] },
+                { name: "Hanamkonda - Kazipet Junction Bus Stop", coords: [17.9813, 79.5255] },
+                { name: "Hanamkonda - NIT Warangal Stop", coords: [17.9839, 79.5307] }
+            ],
+            "Warangal": [
+                { name: "Warangal - Central Bus Station", coords: [17.9689, 79.6001] },
+                { name: "Warangal - Enumamula Bus Stop", coords: [17.9523, 79.6201] },
+                { name: "Warangal - Warangal Railway Station Stop", coords: [17.9784, 79.5941] }
+            ],
+            "Karimnagar": [
+                { name: "Karimnagar - Karimnagar Bus Station", coords: [18.4386, 79.1288] },
+                { name: "Karimnagar - Collectorate Bus Stop", coords: [18.4301, 79.1245] },
+                { name: "Karimnagar - Court Chowk Stop", coords: [18.4340, 79.1320] }
+            ],
+            "Khammam": [
+                { name: "Khammam - New Bus Stand", coords: [17.2473, 80.1514] },
+                { name: "Khammam - Old Bus Stand", coords: [17.2501, 80.1450] },
+                { name: "Khammam - Wyra Bus Stop", coords: [17.2001, 80.3501] }
+            ],
+            "Nizamabad": [
+                { name: "Nizamabad - Nizamabad Bus Station", coords: [18.6725, 78.0941] },
+                { name: "Nizamabad - Armoor Bus Stop", coords: [18.7891, 78.2862] }
+            ],
+            "Nalgonda": [
+                { name: "Nalgonda - Nalgonda Bus Stand", coords: [17.0577, 79.2682] },
+                { name: "Nalgonda - Miryalaguda Bus Station", coords: [16.8741, 79.5631] }
+            ],
+            "Rangareddy": [
+                { name: "Rangareddy - Gachibowli Bus Stop", coords: [17.4401, 78.3489] },
+                { name: "Rangareddy - Shamshabad Bus Stop", coords: [17.2543, 78.4326] },
+                { name: "Rangareddy - Ibrahimpatnam Bus Station", coords: [17.1852, 78.6473] }
+            ],
+            "West Godavari": [
+                { name: "West Godavari - Bhimavaram New Bus Stand", coords: [16.5448, 81.5212] },
+                { name: "West Godavari - Tanuku Bus Stand", coords: [16.7570, 81.7088] },
+                { name: "West Godavari - Tadepalligudem Bus Stand", coords: [16.8142, 81.5273] },
+                { name: "West Godavari - Narsapuram Bus Station", coords: [16.4341, 81.6961] },
+                { name: "West Godavari - Palakollu Bus Stand", coords: [16.5186, 81.7289] }
+            ],
+            "Eluru": [
+                { name: "Eluru - Eluru Bus Station", coords: [16.7107, 81.0952] },
+                { name: "Eluru - Jangareddygudem Bus Stand", coords: [17.1192, 81.2941] }
+            ],
+            "NTR": [
+                { name: "NTR - Vijayawada Pandit Nehru Bus Station", coords: [16.5089, 80.6156] },
+                { name: "NTR - Mylavaram Bus Stop", coords: [16.7592, 80.6381] },
+                { name: "NTR - Nandigama Bus Station", coords: [16.7721, 80.2911] }
+            ],
+            "Visakhapatnam": [
+                { name: "Visakhapatnam - Dwaraka Bus Station (RTC Complex)", coords: [17.7275, 83.3038] },
+                { name: "Visakhapatnam - Gajuwaka Bus Station", coords: [17.6912, 83.2185] },
+                { name: "Visakhapatnam - Maddilapalem Bus Depot", coords: [17.7381, 83.3204] }
+            ],
+            "Tirupati": [
+                { name: "Tirupati - Central Bus Stand", coords: [13.6288, 79.4192] },
+                { name: "Tirupati - Alipiri Bus Stop", coords: [13.6508, 79.4005] },
+                { name: "Tirupati - Srikalahasti Bus Stand", coords: [13.7508, 79.6983] }
+            ]
+        };
+
+        /* Major city/town stops for districts not covered by the detailed list above. */
+        const districtCityData = {
+            "Adilabad": [[19.6641,78.5320], ["Adilabad","Utnoor","Boath","Bhainsa"]],
+            "Bhadradri Kothagudem": [[17.5500,80.6200], ["Kothagudem","Palvancha","Bhadrachalam","Manuguru"]],
+            "Jagtial": [[18.7940,78.9160], ["Jagtial","Korutla","Metpally","Dharmapuri"]],
+            "Jangaon": [[17.7260,79.1510], ["Jangaon","Station Ghanpur","Palakurthi","Zaffergadh"]],
+            "Jayashankar Bhupalpally": [[18.4330,79.8600], ["Bhupalpally","Kataram","Mahadevpur","Regonda"]],
+            "Jogulamba Gadwal": [[16.2340,77.7950], ["Gadwal","Alampur","Ieeja","Undavelly"]],
+            "Kamareddy": [[18.3200,78.3400], ["Kamareddy","Banswada","Yellareddy","Pitlam"]],
+            "Kumuram Bheem": [[19.3600,79.2900], ["Asifabad","Kagaznagar","Sirpur","Rebbena"]],
+            "Mahabubabad": [[17.6000,80.0000], ["Mahabubabad","Dornakal","Maripeda","Kuravi"]],
+            "Mahbubnagar": [[16.7488,77.9850], ["Mahbubnagar","Jadcherla","Bhoothpur","Devarkadra"]],
+            "Mancherial": [[18.8700,79.4400], ["Mancherial","Bellampalli","Luxettipet","Chennur"]],
+            "Medchal-Malkajgiri": [[17.6300,78.4800], ["Medchal","Malkajgiri","Alwal","Uppal"]],
+            "Mulugu": [[18.1900,79.9300], ["Mulugu","Eturnagaram","Tadvai","Venkatapur"]],
+            "Nagarkurnool": [[16.4800,78.3200], ["Nagarkurnool","Kalwakurthy","Achampet","Kollapur"]],
+            "Narayanpet": [[16.7500,77.5000], ["Narayanpet","Makthal","Kosgi","Dhanwada"]],
+            "Nirmal": [[19.1000,78.3500], ["Nirmal","Bhainsa","Khanapur","Mudhole"]],
+            "Peddapalli": [[18.6100,79.3800], ["Peddapalli","Ramagundam","Sultanabad","Manthani"]],
+            "Rajanna Sircilla": [[18.3800,78.8200], ["Sircilla","Vemulawada","Gambhiraopet","Mustabad"]],
+            "Siddipet": [[18.1000,78.8500], ["Siddipet","Gajwel","Husnabad","Dubbak"]],
+            "Suryapet": [[17.1400,79.6200], ["Suryapet","Kodad","Huzurnagar","Neredcherla"]],
+            "Vikarabad": [[17.3400,77.9000], ["Vikarabad","Tandur","Parigi","Kodangal"]],
+            "Wanaparthy": [[16.3600,78.0600], ["Wanaparthy","Pebbair","Kothakota","Atmakur"]],
+            "Yadadri Bhuvanagiri": [[17.5100,78.8800], ["Bhongir","Yadagirigutta","Choutuppal","Aler"]],
+
+            "East Godavari": [[16.9900,82.2500], ["Rajamahendravaram","Anaparthi","Rajanagaram","Jaggampeta"]],
+            "Krishna": [[16.1700,81.1300], ["Machilipatnam","Gudivada","Pedana","Avanigadda"]],
+            "Guntur": [[16.3067,80.4365], ["Guntur","Tenali","Mangalagiri","Ponnur"]],
+            "Chittoor": [[13.2172,79.1003], ["Chittoor","Palamaner","Punganur","Kuppam"]],
+            "Kurnool": [[15.8281,78.0373], ["Kurnool","Adoni","Dhone","Yemmiganur"]],
+            "Alluri Sitharama Raju": [[17.6900,81.9500], ["Paderu","Araku Valley","Rampachodavaram","Chintapalle"]],
+            "Anakapalli": [[17.6900,83.0000], ["Anakapalle","Narsipatnam","Yelamanchili","Chodavaram"]],
+            "Ananthapuramu": [[14.6819,77.6006], ["Anantapur","Guntakal","Rayadurg","Tadipatri"]],
+            "Annamayya": [[14.0500,79.0500], ["Rayachoti","Madanapalle","Rajampet","Kodur"]],
+            "Bapatla": [[15.9042,80.4675], ["Bapatla","Chirala","Repalle","Parchur"]],
+            "Kakinada": [[16.9891,82.2475], ["Kakinada","Pithapuram","Peddapuram","Tuni"]],
+            "Konaseema": [[16.5800,82.0200], ["Amalapuram","Razole","Mummidivaram","Kothapeta"]],
+            "Nandyal": [[15.4779,78.4836], ["Nandyal","Allagadda","Atmakur","Banaganapalle"]],
+            "Palnadu": [[16.2350,80.0500], ["Narasaraopet","Chilakaluripet","Sattenapalle","Vinukonda"]],
+            "Parvathipuram Manyam": [[18.7800,83.4300], ["Parvathipuram","Salur","Kurupam","Palakonda"]],
+            "Prakasam": [[15.5057,80.0499], ["Ongole","Markapur","Kandukur","Chimakurthy"]],
+            "Srikakulam": [[18.2949,83.8938], ["Srikakulam","Palasa","Tekkali","Amadalavalasa"]],
+            "Sri Potti Sriramulu Nellore": [[14.4426,79.9865], ["Nellore","Kavali","Gudur","Atmakur"]],
+            "Sri Sathya Sai": [[14.1652,77.8117], ["Puttaparthi","Hindupur","Kadiri","Dharmavaram"]],
+            "Vizianagaram": [[18.1067,83.3956], ["Vizianagaram","Bobbili","Gajapathinagaram","Salur"]],
+            "YSR Kadapa": [[14.4673,78.8242], ["Kadapa","Proddatur","Jammalamadugu","Pulivendula"]]
+        };
+
+        function buildDistrictCityStops(district) {
+            const data = districtCityData[district];
+            if (!data) return [];
+
+            const base = data[0];
+            const cities = data[1];
+
+            return cities.map((city, index) => {
+                const row = Math.floor(index / 2);
+                const col = index % 2;
+                const lat = base[0] + row * 0.018 + col * 0.009;
+                const lon = base[1] + row * 0.018 + col * 0.012;
+                return {
+                    name: `${city} - Bus Stand / RTC Stop`,
+                    coords: [lat, lon],
+                    city: city
+                };
+            });
+        }
+
+        let map, routeLayer, startMarker, endMarker;
+        let stateSelect, districtSelect, pickupDatalist, dropoffDatalist;
+        let currentDistrictStops = [];
+
+        function setDefaultDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            document.getElementById('journey-date').value = `${year}-${month}-${day}`;
+            document.getElementById('journey-time').value = `${hours}:${minutes}`;
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profile-dropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+
+        function openEditProfileModal() {
+            document.getElementById('edit-name').value = document.getElementById('display-name').textContent;
+            document.getElementById('edit-age').value = parseInt(document.getElementById('display-age').textContent);
+            document.getElementById('edit-sex').value = document.getElementById('display-sex').textContent;
+            document.getElementById('edit-mobile').value = document.getElementById('display-mobile').textContent;
+            document.getElementById('edit-email').value = document.getElementById('display-email').textContent;
+            document.getElementById('edit-avatar').value = document.getElementById('dropdown-avatar').src;
+
+            openModal('edit-profile-modal');
+        }
+
+        function saveProfileChanges(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('edit-name').value;
+            const age = document.getElementById('edit-age').value;
+            const sex = document.getElementById('edit-sex').value;
+            const mobile = document.getElementById('edit-mobile').value;
+            const email = document.getElementById('edit-email').value;
+            const avatar = document.getElementById('edit-avatar').value;
+
+            document.getElementById('display-name').textContent = name;
+            document.getElementById('display-age').textContent = age + " Years";
+            document.getElementById('display-sex').textContent = sex;
+            document.getElementById('display-mobile').textContent = mobile;
+            document.getElementById('display-email').textContent = email;
+
+            document.getElementById('dropdown-avatar').src = avatar;
+            document.getElementById('nav-avatar').src = avatar;
+
+            closeModal('edit-profile-modal');
+            alert('Profile details updated successfully!');
+        }
+
+        function updateDistricts() {
+            const selectedState = stateSelect.value;
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+
+            if (selectedState && districtData[selectedState]) {
+                districtData[selectedState].forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district;
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+
+                if (selectedState === "TS") {
+                    districtSelect.value = "Hyderabad";
+                } else if (selectedState === "AP") {
+                    districtSelect.value = "West Godavari";
+                }
+            }
+
+            updateBusStops();
+        }
+
+        function updateBusStops() {
+            const selectedDistrict = districtSelect.value;
+            pickupDatalist.innerHTML = '';
+            dropoffDatalist.innerHTML = '';
+            document.getElementById('pickup-input').value = '';
+            document.getElementById('dropoff-input').value = '';
+            hideStopSuggestions('pickup');
+            hideStopSuggestions('dropoff');
+
+            let stops = districtBusStops[selectedDistrict];
+
+            // If detailed stops are not stored for this district, use its city/town list.
+            // This keeps the dropdown district-specific instead of showing generic demo stops.
+            if (!stops || stops.length === 0) {
+                stops = buildDistrictCityStops(selectedDistrict);
+            }
+
+            currentDistrictStops = stops;
+
+            // Show every stop when the user opens the pickup/drop-off box.
+            // Typing then filters the same district list instantly.
+
+            // Keep the native datalist populated for browser fallback and keyboard selection.
+            stops.forEach(stop => {
+                const pickOption = document.createElement('option');
+                pickOption.value = stop.name;
+                pickupDatalist.appendChild(pickOption);
+
+                const dropOption = document.createElement('option');
+                dropOption.value = stop.name;
+                dropoffDatalist.appendChild(dropOption);
+            });
+
+            // Don't preselect stops: let the passenger choose from filtered matches.
+            document.getElementById('pickup-input').placeholder =
+                `Search ${selectedDistrict || 'district'} pickup stops...`;
+            document.getElementById('dropoff-input').placeholder =
+                `Search ${selectedDistrict || 'district'} drop-off stops...`;
+        }
+
+        function showStopSuggestions(which) {
+            const input = document.getElementById(which + '-input');
+            const panel = document.getElementById(which + '-suggestions');
+            const query = input.value.trim().toLowerCase();
+
+            panel.innerHTML = '';
+            const matches = currentDistrictStops.filter(stop =>
+                stop.name.toLowerCase().includes(query)
+            );
+
+            if (!currentDistrictStops.length) {
+                panel.innerHTML = '<div class="stop-suggestion-empty">Choose a district first.</div>';
+                panel.classList.add('show');
+                return;
+            }
+
+            const count = document.createElement('div');
+            count.className = 'stop-match-count';
+            count.textContent = query
+                ? `${matches.length} matching city/bus stop${matches.length === 1 ? '' : 's'}`
+                : `${matches.length} city/bus stops available in ${districtSelect.value || 'this district'}`;
+            panel.appendChild(count);
+
+            if (!matches.length) {
+                const empty = document.createElement('div');
+                empty.className = 'stop-suggestion-empty';
+                empty.textContent = 'No matching city/bus stop found in this district. Try another city or stop name.';
+                panel.appendChild(empty);
+            } else {
+                matches.forEach(stop => {
+                    const option = document.createElement('button');
+                    option.type = 'button';
+                    option.className = 'stop-suggestion-item';
+                    option.setAttribute('role', 'option');
+                    option.textContent = stop.name;
+                    option.title = `Select ${stop.name}`;
+                    // mousedown selects before the input's blur event closes the panel.
+                    option.addEventListener('mousedown', function (event) {
+                        event.preventDefault();
+                        input.value = stop.name;
+                        hideStopSuggestions(which);
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                    panel.appendChild(option);
+                });
+            }
+            panel.classList.add('show');
+        }
+
+        function hideStopSuggestions(which) {
+            const panel = document.getElementById(which + '-suggestions');
+            if (panel) panel.classList.remove('show');
+        }
+
+        function isValidDistrictStop(name) {
+            return currentDistrictStops.some(stop =>
+                stop.name.toLowerCase() === name.trim().toLowerCase()
+            );
+        }
+
+        /* Recent Searches LocalStorage Operations */
+        function saveRecentSearch(state, district, pickup, dropoff) {
+            let recentSearches = JSON.parse(localStorage.getItem('pallevelugu_recent_searches')) || [];
+            
+            const newSearch = { state, district, pickup, dropoff };
+
+            recentSearches = recentSearches.filter(s => !(s.pickup === pickup && s.dropoff === dropoff));
+            recentSearches.unshift(newSearch);
+
+            if (recentSearches.length > 5) recentSearches.pop();
+
+            localStorage.setItem('pallevelugu_recent_searches', JSON.stringify(recentSearches));
+            loadRecentSearches();
+        }
+
+        function loadRecentSearches() {
+            const recentSearches = JSON.parse(localStorage.getItem('pallevelugu_recent_searches')) || [];
+            const container = document.getElementById('recent-searches-container');
+            const chipsBox = document.getElementById('recent-chips');
+
+            if (recentSearches.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            chipsBox.innerHTML = '';
+            recentSearches.forEach((search) => {
+                const chip = document.createElement('div');
+                chip.className = 'search-chip';
+                chip.innerHTML = `🚌 <span>${search.pickup} → ${search.dropoff}</span>`;
+                chip.onclick = () => applyRecentSearch(search);
+                chipsBox.appendChild(chip);
+            });
+
+            container.style.display = 'block';
+        }
+
+        function applyRecentSearch(search) {
+            stateSelect.value = search.state;
+            updateDistricts();
+            districtSelect.value = search.district;
+            updateBusStops();
+
+            document.getElementById('pickup-input').value = search.pickup;
+            document.getElementById('dropoff-input').value = search.dropoff;
+
+            document.getElementById('bus-route-form').dispatchEvent(new Event('submit'));
+        }
+
+        function clearRecentSearches() {
+            localStorage.removeItem('pallevelugu_recent_searches');
+            loadRecentSearches();
+        }
+
+        function initMap() {
+            // Avoid creating multiple Leaflet maps on the same element.
+            if (map) {
+                map.invalidateSize();
+                return;
+            }
+
+            map = L.map('map', {
+                zoomControl: true,
+                scrollWheelZoom: true
+            }).setView([17.3780, 78.4840], 10);
+
+            // Use the community OSM tile server instead of CARTO (which requires an API key).
+            // This public endpoint can still have availability/rate limits; use a commercial
+            // tile provider for production or heavy traffic.
+            const baseTiles = L.tileLayer(
+                'https://tile.openstreetmap.de/{z}/{x}/{y}.png',
+                {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+                    crossOrigin: true
+                }
+            );
+
+            baseTiles.addTo(map);
+            let tileErrorShown = false;
+            baseTiles.on('tileerror', function () {
+                if (tileErrorShown) return;
+                tileErrorShown = true;
+                showMapStatus('Map tiles could not load (the map provider or network may be blocking requests). The route markers and line can still be used. Try Google Maps or Apple Maps below.', true);
+            });
+            baseTiles.on('load', function () {
+                showMapStatus('', false);
+                tileErrorShown = false;
+            });
+        }
+
+        function showMapStatus(message, visible) {
+            const status = document.getElementById('map-status');
+            if (!status) return;
+            status.textContent = message || '';
+            status.style.display = visible ? 'block' : 'none';
+        }
+
+        function resetMapView() {
+            if (!map) initMap();
+            if (routeLayer) map.removeLayer(routeLayer);
+            if (startMarker) map.removeLayer(startMarker);
+            if (endMarker) map.removeLayer(endMarker);
+            routeLayer = startMarker = endMarker = null;
+            map.setView([17.3780, 78.4840], 7);
+            document.getElementById('route-info').innerHTML = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            stateSelect = document.getElementById('state-select');
+            districtSelect = document.getElementById('district-select');
+            pickupDatalist = document.getElementById('pickup-bus-stops');
+            dropoffDatalist = document.getElementById('dropoff-bus-stops');
+
+            initMap();
+            setDefaultDateTime();
+            updateDistricts();
+            loadRecentSearches();
+
+            stateSelect.addEventListener('change', updateDistricts);
+            districtSelect.addEventListener('change', updateBusStops);
+
+            const pickupInput = document.getElementById('pickup-input');
+            const dropoffInput = document.getElementById('dropoff-input');
+            pickupInput.addEventListener('focus', () => showStopSuggestions('pickup'));
+            pickupInput.addEventListener('input', () => showStopSuggestions('pickup'));
+            dropoffInput.addEventListener('focus', () => showStopSuggestions('dropoff'));
+            dropoffInput.addEventListener('input', () => showStopSuggestions('dropoff'));
+            pickupInput.addEventListener('blur', () => setTimeout(() => hideStopSuggestions('pickup'), 150));
+            dropoffInput.addEventListener('blur', () => setTimeout(() => hideStopSuggestions('dropoff'), 150));
+
+            document.getElementById('bus-route-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const state = stateSelect.value;
+                const district = districtSelect.value;
+                const pickupName = document.getElementById('pickup-input').value.trim();
+                const dropoffName = document.getElementById('dropoff-input').value.trim();
+
+                if (!isValidDistrictStop(pickupName)) {
+                    alert('Please select a pickup stop from the matching suggestions for the selected district.');
+                    document.getElementById('pickup-input').focus();
+                    showStopSuggestions('pickup');
+                    return;
+                }
+                if (!isValidDistrictStop(dropoffName)) {
+                    alert('Please select a drop-off stop from the matching suggestions for the selected district.');
+                    document.getElementById('dropoff-input').focus();
+                    showStopSuggestions('dropoff');
+                    return;
+                }
+                if (pickupName.toLowerCase() === dropoffName.toLowerCase()) {
+                    alert('Pickup and drop-off stops must be different.');
+                    return;
+                }
+
+                let startCoords = null;
+                let endCoords = null;
+
+                currentDistrictStops.forEach(stop => {
+                    if (stop.name.toLowerCase() === pickupName.toLowerCase()) startCoords = stop.coords;
+                    if (stop.name.toLowerCase() === dropoffName.toLowerCase()) endCoords = stop.coords;
+                });
+
+                if (!startCoords) startCoords = [17.3780, 78.4840];
+                if (!endCoords) endCoords = [17.4436, 78.4983];
+
+                saveRecentSearch(state, district, pickupName, dropoffName);
+                drawRoute(startCoords, endCoords, pickupName, dropoffName);
+                renderTimetable();
+            });
+        });
+
+        function renderTimetable() {
+            const tableBody = document.getElementById('timetable-rows');
+            tableBody.innerHTML = '';
+
+            const selectedDate = document.getElementById('journey-date').value;
+            const selectedTime = document.getElementById('journey-time').value;
+
+            const dateObj = new Date(selectedDate);
+            const dateString = dateObj.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+
+            document.getElementById('current-date-display').innerText = `📅 Date: ${dateString}`;
+
+            const mockSchedules = [
+                { busNo: "TGSRTC-101 (Express)", departure: selectedTime || "07:30 AM", arrival: "2 hrs later", status: "On Time", class: "status-on-time" },
+                { busNo: "PAL-204 (Pallevelugu)", departure: "09:15 AM", arrival: "10:40 AM", status: "Upcoming", class: "status-upcoming" },
+                { busNo: "TGSRTC-309 (Deluxe)", departure: "11:00 AM", arrival: "12:10 PM", status: "Upcoming", class: "status-upcoming" },
+                { busNo: "PAL-112 (Pallevelugu)", departure: "02:30 PM", arrival: "03:50 PM", status: "Upcoming", class: "status-upcoming" }
+            ];
+
+            document.getElementById('available-buses-count').innerText = `🚌 Available Buses: ${mockSchedules.length}`;
+
+            mockSchedules.forEach(item => {
+                const row = `
+                    <tr>
+                        <td><strong>${item.busNo}</strong></td>
+                        <td>${item.departure}</td>
+                        <td>${item.arrival}</td>
+                        <td><span class="status-badge ${item.class}">${item.status}</span></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+
+            document.getElementById('timetable-card').style.display = 'block';
+        }
+
+        function formatDuration(totalMinutes) {
+            const hours = Math.floor(totalMinutes / 60);
+            const mins = Math.round(totalMinutes % 60);
+            if (hours === 0) return `${mins} mins`;
+            return `${hours} hr ${mins} mins`;
+        }
+
+        async function drawRoute(start, end, startName, endName) {
+            if (!map) initMap();
+
+            if (routeLayer) map.removeLayer(routeLayer);
+            if (startMarker) map.removeLayer(startMarker);
+            if (endMarker) map.removeLayer(endMarker);
+
+            // Always draw markers and a straight-line fallback first, so the
+            // route remains visible even if the public road-routing service fails.
+            startMarker = L.marker(start).addTo(map)
+                .bindPopup(`<b>Pickup:</b> ${startName}`).openPopup();
+            endMarker = L.marker(end).addTo(map)
+                .bindPopup(`<b>Drop-off:</b> ${endName}`);
+
+            routeLayer = L.polyline([start, end], {
+                color: '#2563eb', weight: 5, opacity: 0.85, dashArray: '8, 8'
+            }).addTo(map);
+            map.fitBounds(routeLayer.getBounds(), { padding: [40, 40] });
+
+            const googleUrl = 'https://www.google.com/maps/dir/?api=1&origin=' +
+                encodeURIComponent(startName + ', India') + '&destination=' +
+                encodeURIComponent(endName + ', India') + '&travelmode=driving';
+            const appleUrl = 'https://maps.apple.com/?saddr=' +
+                encodeURIComponent(startName + ', India') + '&daddr=' +
+                encodeURIComponent(endName + ', India') + '&dirflg=d';
+            document.getElementById('google-maps-link').href = googleUrl;
+            document.getElementById('apple-maps-link').href = appleUrl;
+
+            const routeInfoContainer = document.getElementById('route-info');
+            routeInfoContainer.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-label">📍 Route</div>
+                    <div class="metric-value">${startName} → ${endName}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">⏱️ Travel time</div>
+                    <div class="metric-value">Road estimate loading...</div>
+                </div>`;
+
+            const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Routing service returned HTTP ' + response.status);
+                }
+                const data = await response.json();
+                if (!data.routes || !data.routes.length) {
+                    throw new Error('No road route returned');
+                }
+
+                const route = data.routes[0];
+                const routeCoordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                if (routeLayer) map.removeLayer(routeLayer);
+                routeLayer = L.polyline(routeCoordinates, {
+                    color: '#2563eb', weight: 6, opacity: 0.95
+                }).addTo(map);
+                map.fitBounds(routeLayer.getBounds(), { padding: [40, 40] });
+
+                const distanceKm = Number((route.distance / 1000).toFixed(1));
+                // This is an approximate bus-time estimate, not live RTC data.
+                const averageBusSpeedKmh = 38;
+                const totalTravelMinutes = Math.max(Math.round((distanceKm / averageBusSpeedKmh) * 60), 10);
+
+                routeInfoContainer.innerHTML = `
+                    <div class="metric-card">
+                        <div class="metric-label">📍 Estimated Road Distance</div>
+                        <div class="metric-value">${distanceKm} km</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">⏱️ Approx. Bus Travel Time</div>
+                        <div class="metric-value">${formatDuration(totalTravelMinutes)}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">🚌 Assumed Average Speed</div>
+                        <div class="metric-value">${averageBusSpeedKmh} km/h</div>
+                    </div>`;
+            } catch (error) {
+                console.warn('Road routing unavailable; keeping straight-line fallback:', error);
+                const distanceKm = haversineDistanceKm(start, end);
+                const estimatedMinutes = Math.max(Math.round((distanceKm / 38) * 60), 10);
+                routeInfoContainer.innerHTML = `
+                    <div class="metric-card">
+                        <div class="metric-label">📍 Approx. Straight-line Distance</div>
+                        <div class="metric-value">${distanceKm.toFixed(1)} km</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">⏱️ Rough Travel-Time Estimate</div>
+                        <div class="metric-value">${formatDuration(estimatedMinutes)}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">ℹ️ Routing status</div>
+                        <div class="metric-value">Road route unavailable</div>
+                    </div>`;
+                showMapStatus('Road-routing service is unavailable or blocked. A straight-line route is shown; use Google Maps or Apple Maps for road navigation.', true);
+            }
+        }
+
+        function haversineDistanceKm(a, b) {
+            const toRad = value => value * Math.PI / 180;
+            const lat1 = toRad(a[0]);
+            const lat2 = toRad(b[0]);
+            const dLat = toRad(b[0] - a[0]);
+            const dLon = toRad(b[1] - a[1]);
+            const h = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+            return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+        }
+
+        function openFoodModal() {
+            const district = document.getElementById("district-select")?.value || "";
+            const pickup = document.getElementById("pickup-input")?.value || "";
+            const dropoff = document.getElementById("dropoff-input")?.value || "";
+
+            const districtMessage = document.getElementById("food-district-message");
+            const routeDisplay = document.getElementById("food-route-display");
+
+            if (district) {
+                districtMessage.textContent =
+                    "Food and refreshment ideas for your journey in " + district + ".";
+            } else {
+                districtMessage.textContent =
+                    "Choose a district to see suggested food options near your journey.";
+            }
+
+            if (pickup && dropoff) {
+                routeDisplay.textContent = pickup + " → " + dropoff;
+            } else {
+                routeDisplay.textContent = "Select pickup and drop-off stops first.";
+            }
+
+            openModal("food-modal");
+        }
+
+        function showHome() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('bus-route-form').reset();
+            setDefaultDateTime();
+            document.getElementById('timetable-card').style.display = 'none';
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function handleModalSubmit(event, successMessage) {
+            event.preventDefault();
+            alert(successMessage);
+            event.target.reset();
+            const openModalElement = event.target.closest('.modal');
+            if (openModalElement) {
+                openModalElement.style.display = 'none';
+            }
+        }
+
+        function toggleTheme(mode) {
+            if (mode === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+            if (!event.target.closest('.profile-container')) {
+                const profileDropdown = document.getElementById('profile-dropdown');
+                if (profileDropdown && profileDropdown.classList.contains('show')) {
+                    profileDropdown.classList.remove('show');
+                }
+            }
+        };
+    </script>
+</body>
+</html>
