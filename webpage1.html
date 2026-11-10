@@ -905,27 +905,477 @@
             </div>
         </div>
 
-        <!-- Bus Timings Schedule Card -->
-        <div class="card timetable-section" id="timetable-card">
-            <div class="timetable-header-info">
-                <h3 style="margin: 0; color: var(--accent-blue);">Available Bus Timings</h3>
-                <div>
-                    <span id="current-date-display" style="font-weight: bold; margin-right: 15px;">📅 Date: --</span>
-                    <span id="available-buses-count" style="font-weight: bold; color: #10b981;">🚌 Available Buses: 0</span>
-                </div>
-            </div>
-            <table class="timetable-table">
-                <thead>
-                    <tr>
-                        <th>Bus Service</th>
-                        <th>Departure</th>
-                        <th>Expected Arrival</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="timetable-rows"></tbody>
-            </table>
-        </div>
+        
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #0f172a;
+    color: white;
+    padding: 20px;
+}
+
+.container {
+    max-width: 950px;
+    margin: auto;
+    background: #1e293b;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+header h1 {
+    color: #38bdf8;
+    margin-bottom: 8px;
+}
+
+header p {
+    color: #cbd5e1;
+}
+
+.bus-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.bus-info div {
+    background: #334155;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.bus-info span {
+    color: #38bdf8;
+    font-weight: bold;
+}
+
+h2 {
+    margin: 20px 0 15px;
+    color: #38bdf8;
+}
+
+.summary {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.summary div {
+    padding: 15px;
+    background: #334155;
+    border-radius: 10px;
+    text-align: center;
+    flex: 1;
+    min-width: 110px;
+}
+
+.summary h3 {
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+.bus-layout {
+    background: #0f172a;
+    border: 2px solid #64748b;
+    border-radius: 20px;
+    padding: 20px;
+    max-width: 430px;
+    margin: auto;
+}
+
+.driver {
+    background: #475569;
+    padding: 12px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.seat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.seat-group {
+    display: flex;
+    gap: 8px;
+}
+
+.seat {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+}
+
+.available {
+    background: #16a34a;
+}
+
+.selected {
+    background: #2563eb;
+}
+
+.booked {
+    background: #dc2626;
+    cursor: not-allowed;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.box {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    border-radius: 3px;
+}
+
+.booking {
+    margin-top: 25px;
+    background: #334155;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 6px;
+}
+
+button.book-btn {
+    width: 100%;
+    padding: 14px;
+    background: #0284c7;
+    border: none;
+    border-radius: 7px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button.book-btn:hover {
+    background: #0369a1;
+}
+
+#message {
+    margin-top: 15px;
+    text-align: center;
+    font-weight: bold;
+    color: #4ade80;
+}
+
+@media(max-width:500px) {
+    .seat {
+        width: 38px;
+        height: 40px;
+        font-size: 12px;
+    }
+
+    .bus-layout {
+        padding: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+
+
+<h2>Bus Information</h2>
+
+<div class="bus-info">
+    <div>Bus Number: <span>AP 16 Z 1234</span></div>
+    <div>Bus Type: <span>Pallevelugu Express</span></div>
+    <div>From: <span>Vijayawada</span></div>
+    <div>To: <span>Guntur</span></div>
+    <div>Departure: <span>09:00 AM</span></div>
+    <div>Arrival: <span>10:30 AM</span></div>
+</div>
+
+<h2>Seat Availability</h2>
+
+<div class="summary">
+    <div>
+        <h3 id="total">24</h3>
+        Total Seats
+    </div>
+    <div>
+        <h3 id="available">16</h3>
+        Available
+    </div>
+    <div>
+        <h3 id="booked">8</h3>
+        Booked
+    </div>
+    <div>
+        <h3 id="selected">0</h3>
+        Selected
+    </div>
+</div>
+
+<div class="bus-layout">
+
+    <div class="driver">DRIVER</div>
+
+    <div id="seatContainer"></div>
+
+</div>
+
+<div class="legend">
+    <span><i class="box available"></i> Available</span>
+    <span><i class="box selected"></i> Selected</span>
+    <span><i class="box booked"></i> Booked</span>
+</div>
+
+<div class="booking">
+
+    <h2>Passenger Details</h2>
+
+    <input type="text" id="name"
+    placeholder="Enter Passenger Name">
+
+    <input type="tel" id="mobile"
+    placeholder="Enter Mobile Number"
+    maxlength="10">
+
+    <p>Selected Seats: <span id="seatNumbers">None</span></p>
+
+    <br>
+
+    <button class="book-btn" onclick="bookSeats()">
+        CONFIRM BOOKING
+    </button>
+
+    <p id="message"></p>
+
+</div>
+
+</div>
+
+<script>
+
+// Initial booked seats (Demo data)
+let bookedSeats = [3, 5, 8, 10, 13, 16, 19, 22];
+
+let selectedSeats = [];
+
+let totalSeats = 24;
+
+// Create bus seats
+function displaySeats() {
+
+    const container = document.getElementById("seatContainer");
+
+    container.innerHTML = "";
+
+    for (let row = 0; row < 6; row++) {
+
+        let seatRow = document.createElement("div");
+        seatRow.className = "seat-row";
+
+        let leftGroup = document.createElement("div");
+        leftGroup.className = "seat-group";
+
+        let rightGroup = document.createElement("div");
+        rightGroup.className = "seat-group";
+
+        for (let col = 0; col < 4; col++) {
+
+            let seatNumber = row * 4 + col + 1;
+
+            let seat = document.createElement("button");
+
+            seat.className = "seat";
+            seat.textContent = seatNumber;
+
+            if (bookedSeats.includes(seatNumber)) {
+
+                seat.classList.add("booked");
+                seat.disabled = true;
+
+            }
+
+            else if (selectedSeats.includes(seatNumber)) {
+
+                seat.classList.add("selected");
+
+            }
+
+            else {
+
+                seat.classList.add("available");
+
+            }
+
+            seat.onclick = function() {
+                toggleSeat(seatNumber);
+            };
+
+            if (col < 2) {
+                leftGroup.appendChild(seat);
+            } else {
+                rightGroup.appendChild(seat);
+            }
+
+        }
+
+        seatRow.appendChild(leftGroup);
+        seatRow.appendChild(rightGroup);
+
+        container.appendChild(seatRow);
+
+    }
+
+    updateCounts();
+
+}
+
+// Select or deselect a seat
+function toggleSeat(number) {
+
+    if (bookedSeats.includes(number)) return;
+
+    if (selectedSeats.includes(number)) {
+
+        selectedSeats = selectedSeats.filter(
+            seat => seat !== number
+        );
+
+    }
+
+    else {
+
+        if (selectedSeats.length >= 4) {
+            alert("You can select maximum 4 seats.");
+            return;
+        }
+
+        selectedSeats.push(number);
+
+    }
+
+    displaySeats();
+
+}
+
+// Update seat information
+function updateCounts() {
+
+    document.getElementById("total").textContent = totalSeats;
+
+    document.getElementById("booked").textContent =
+        bookedSeats.length;
+
+    document.getElementById("selected").textContent =
+        selectedSeats.length;
+
+    document.getElementById("available").textContent =
+        totalSeats - bookedSeats.length - selectedSeats.length;
+
+    document.getElementById("seatNumbers").textContent =
+        selectedSeats.length
+        ? selectedSeats.join(", ")
+        : "None";
+
+}
+
+// Confirm booking
+function bookSeats() {
+
+    let name = document.getElementById("name").value.trim();
+
+    let mobile = document.getElementById("mobile").value.trim();
+
+    let message = document.getElementById("message");
+
+    if (name === "" || mobile === "") {
+
+        alert("Please enter passenger details.");
+        return;
+
+    }
+
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+
+        alert("Enter a valid 10-digit mobile number.");
+        return;
+
+    }
+
+    if (selectedSeats.length === 0) {
+
+        alert("Please select at least one seat.");
+        return;
+
+    }
+
+    let confirmedSeats = [...selectedSeats];
+
+    bookedSeats.push(...confirmedSeats);
+
+    selectedSeats = [];
+
+    message.innerHTML =
+        "Booking Successful!<br>" +
+        "Passenger: " + name +
+        "<br>Mobile: " + mobile +
+        "<br>Booked Seats: " + confirmedSeats.join(", ");
+
+    displaySeats();
+
+}
+
+// Initial display
+displaySeats();
+
+</script>
+
+</body>
+</html>
+
+
 
         <!-- Live Route Map Card -->
         <div id="map-container">
