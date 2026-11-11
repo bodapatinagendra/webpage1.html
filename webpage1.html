@@ -906,12 +906,16 @@
         </div>
 
         
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PALLEVELUGU LIVE - Ticket Booking</title>
 
+<!-- QR Code Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 * {
@@ -928,7 +932,7 @@ body {
 }
 
 .container {
-    max-width: 950px;
+    max-width: 1000px;
     margin: auto;
     background: #1e293b;
     padding: 25px;
@@ -942,18 +946,22 @@ header {
 
 header h1 {
     color: #38bdf8;
-    margin-bottom: 8px;
 }
 
 header p {
     color: #cbd5e1;
+    margin-top: 8px;
+}
+
+h2 {
+    color: #38bdf8;
+    margin: 22px 0 15px;
 }
 
 .bus-info {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
+    gap: 12px;
 }
 
 .bus-info div {
@@ -967,26 +975,33 @@ header p {
     font-weight: bold;
 }
 
-h2 {
-    margin: 20px 0 15px;
-    color: #38bdf8;
+.route-info, .booking, .payment {
+    background: #334155;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 9px 0;
+    border: none;
+    border-radius: 6px;
 }
 
 .summary {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 25px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 20px 0;
 }
 
 .summary div {
-    padding: 15px;
+    padding: 15px 5px;
     background: #334155;
     border-radius: 10px;
     text-align: center;
-    flex: 1;
-    min-width: 110px;
 }
 
 .summary h3 {
@@ -996,16 +1011,16 @@ h2 {
 
 .bus-layout {
     background: #0f172a;
-    border: 2px solid #64748b;
-    border-radius: 20px;
-    padding: 20px;
-    max-width: 430px;
+    border: 3px solid #64748b;
+    border-radius: 25px;
+    padding: 18px 10px;
+    max-width: 570px;
     margin: auto;
 }
 
 .driver {
     background: #475569;
-    padding: 12px;
+    padding: 14px;
     text-align: center;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -1014,35 +1029,70 @@ h2 {
 .seat-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 12px;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 13px;
 }
 
 .seat-group {
     display: flex;
-    gap: 8px;
+    gap: 5px;
+}
+
+.aisle {
+    color: #64748b;
+    font-size: 9px;
 }
 
 .seat {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    border: none;
+    width: 42px;
+    height: 43px;
+    border-radius: 7px;
+    border: 2px solid #475569;
+    color: white;
     font-weight: bold;
     cursor: pointer;
-    color: white;
 }
 
-.available {
-    background: #16a34a;
-}
-
-.selected {
-    background: #2563eb;
-}
-
+.available { background: #16a34a; }
+.selected { background: #2563eb; }
 .booked {
     background: #dc2626;
     cursor: not-allowed;
+}
+
+.door-section {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 15px 0;
+    margin: 15px 0;
+    border-top: 1px dashed #64748b;
+    border-bottom: 1px dashed #64748b;
+}
+
+.door {
+    background: #eab308;
+    color: #111827;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.last-title {
+    text-align: center;
+    color: #fbbf24;
+    margin: 20px 0 12px;
+}
+
+.last-row {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.last-row .seat {
+    width: 40px;
 }
 
 .legend {
@@ -1050,7 +1100,7 @@ h2 {
     justify-content: center;
     gap: 15px;
     flex-wrap: wrap;
-    margin: 20px 0;
+    margin: 22px 0;
 }
 
 .legend span {
@@ -1060,28 +1110,49 @@ h2 {
 }
 
 .box {
-    width: 15px;
     height: 15px;
-    display: inline-block;
+    width: 15px;
     border-radius: 3px;
 }
 
-.booking {
-    margin-top: 25px;
-    background: #334155;
-    padding: 20px;
-    border-radius: 10px;
+.booking p {
+    margin-top: 10px;
 }
 
-input, select {
-    width: 100%;
-    padding: 12px;
+.price-box {
+    background: #0f172a;
+    padding: 15px;
+    border-radius: 8px;
+    line-height: 2;
+    margin: 15px 0;
+}
+
+.price-box strong {
+    color: #4ade80;
+}
+
+.payment-option {
+    background: #0f172a;
+    border: 2px solid #475569;
+    border-radius: 8px;
+    padding: 15px;
     margin: 10px 0;
-    border: none;
-    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-button.book-btn {
+.payment-option:has(input:checked) {
+    border-color: #38bdf8;
+}
+
+.payment-option input {
+    width: 20px;
+    margin: 0;
+}
+
+.pay-btn, .book-btn, .print-btn {
     width: 100%;
     padding: 14px;
     background: #0284c7;
@@ -1089,30 +1160,159 @@ button.book-btn {
     border-radius: 7px;
     color: white;
     font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
+    margin-top: 12px;
 }
 
-button.book-btn:hover {
+.pay-btn:hover, .book-btn:hover, .print-btn:hover {
     background: #0369a1;
 }
 
-#message {
-    margin-top: 15px;
+#paymentStatus {
     text-align: center;
-    font-weight: bold;
+    margin-top: 15px;
     color: #4ade80;
 }
 
-@media(max-width:500px) {
-    .seat {
-        width: 38px;
-        height: 40px;
-        font-size: 12px;
-    }
+#ticketSection {
+    display: none;
+    margin-top: 30px;
+}
 
-    .bus-layout {
-        padding: 12px;
+.ticket {
+    background: white;
+    color: #172033;
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 650px;
+    margin: auto;
+    border: 3px solid #0284c7;
+}
+
+.ticket-header {
+    text-align: center;
+    border-bottom: 2px dashed #94a3b8;
+    padding-bottom: 18px;
+}
+
+.ticket-header h2 {
+    color: #075985;
+    margin: 5px 0;
+}
+
+.apsrtc-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 55px;
+    background: #075985;
+    color: white;
+    font-weight: bold;
+    font-size: 22px;
+    border-radius: 8px;
+    border: 3px solid #eab308;
+}
+
+.demo-stamp {
+    display: inline-block;
+    color: #b91c1c;
+    border: 2px solid #b91c1c;
+    padding: 7px 14px;
+    font-weight: bold;
+    transform: rotate(-3deg);
+    margin: 15px 0;
+}
+
+.ticket-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.ticket-item {
+    border-bottom: 1px solid #cbd5e1;
+    padding: 10px 0;
+    overflow-wrap: anywhere;
+}
+
+.ticket-item small {
+    display: block;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+
+.ticket-item strong {
+    color: #0f172a;
+}
+
+.ticket-route {
+    background: #e0f2fe;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 18px;
+    color: #075985;
+}
+
+.qr-area {
+    text-align: center;
+    border-top: 2px dashed #94a3b8;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+#qrcode {
+    display: flex;
+    justify-content: center;
+    margin: 15px auto;
+}
+
+#qrcode img, #qrcode canvas {
+    margin: auto;
+}
+
+.ticket-footer {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.verify-box {
+    background: #334155;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 25px;
+}
+
+.verify-result {
+    margin-top: 15px;
+    font-weight: bold;
+    line-height: 1.8;
+}
+
+.hidden {
+    display: none;
+}
+
+@media(max-width:600px) {
+    body { padding: 7px; }
+    .container { padding: 12px; }
+    .summary { grid-template-columns: 1fr 1fr; }
+    .bus-info { grid-template-columns: 1fr; }
+    .seat {
+        width: 32px;
+        height: 37px;
+        font-size: 10px;
     }
+    .seat-group { gap: 3px; }
+    .aisle { font-size: 7px; }
+    .last-row .seat { width: 34px; }
+    .ticket { padding: 13px; }
+    .ticket-grid { gap: 8px; }
 }
 </style>
 </head>
@@ -1121,45 +1321,57 @@ button.book-btn:hover {
 
 <div class="container">
 
-
+<header>
+    <h1>PALLEVELUGU LIVE</h1>
+    <p>RTC BUS SEAT BOOKING & DIGITAL TICKET SYSTEM</p>
+</header>
 
 <h2>Bus Information</h2>
 
 <div class="bus-info">
-    <div>Bus Number: <span>AP 16 Z 1234</span></div>
-    <div>Bus Type: <span>Pallevelugu Express</span></div>
-    <div>From: <span>Vijayawada</span></div>
-    <div>To: <span>Guntur</span></div>
-    <div>Departure: <span>09:00 AM</span></div>
-    <div>Arrival: <span>10:30 AM</span></div>
+    <div>Bus Registration:
+        <span id="busNumber">AP 16 Z 1234</span>
+    </div>
+
+    <div>Bus Type:
+        <span id="busType">Pallevelugu</span>
+    </div>
+
+    <div>Pickup:
+        <span id="fromStop">Vijayawada</span>
+    </div>
+
+    <div>Drop-off:
+        <span id="toStop">Guntur</span>
+    </div>
+
+    <div>Departure:
+        <span id="departure">09:00 AM</span>
+    </div>
+
+    <div>Arrival:
+        <span id="arrival">10:30 AM</span>
+    </div>
 </div>
 
 <h2>Seat Availability</h2>
 
 <div class="summary">
-    <div>
-        <h3 id="total">24</h3>
-        Total Seats
-    </div>
-    <div>
-        <h3 id="available">16</h3>
-        Available
-    </div>
-    <div>
-        <h3 id="booked">8</h3>
-        Booked
-    </div>
-    <div>
-        <h3 id="selected">0</h3>
-        Selected
-    </div>
+    <div><h3 id="total">57</h3>Total Seats</div>
+    <div><h3 id="available">0</h3>Available</div>
+    <div><h3 id="booked">0</h3>Booked</div>
+    <div><h3 id="selected">0</h3>Selected</div>
 </div>
 
 <div class="bus-layout">
 
-    <div class="driver">DRIVER</div>
+    <div class="driver">🚍 DRIVER</div>
 
     <div id="seatContainer"></div>
+
+    <div class="last-title">LAST ROW - 7 SEATS</div>
+
+    <div id="lastRow" class="last-row"></div>
 
 </div>
 
@@ -1173,22 +1385,213 @@ button.book-btn:hover {
 
     <h2>Passenger Details</h2>
 
-    <input type="text" id="name"
-    placeholder="Enter Passenger Name">
+    <input id="name" placeholder="Passenger Name">
 
-    <input type="tel" id="mobile"
-    placeholder="Enter Mobile Number"
-    maxlength="10">
+    <input id="mobile" type="tel"
+        maxlength="10" placeholder="Mobile Number">
 
-    <p>Selected Seats: <span id="seatNumbers">None</span></p>
+    <div class="price-box">
+        Selected Seats:
+        <strong id="seatNumbers">None</strong>
+        <br>
+        Passengers:
+        <strong id="passengerCount">0</strong>
+        <br>
+        Fare Per Passenger:
+        <strong id="singleFare">₹30</strong>
+        <br>
+        Total Amount:
+        <strong id="totalFare">₹0</strong>
+    </div>
 
-    <br>
-
-    <button class="book-btn" onclick="bookSeats()">
-        CONFIRM BOOKING
+    <button class="book-btn" onclick="showPayment()">
+        PROCEED TO PAYMENT
     </button>
 
-    <p id="message"></p>
+</div>
+
+<!-- PAYMENT SECTION -->
+
+<div class="payment hidden" id="paymentSection">
+
+    <h2>Payment Method</h2>
+
+    <p>Choose your preferred payment method:</p>
+
+    <label class="payment-option">
+        <input type="radio" name="payment" value="UPI">
+        <span>📱 UPI Payment (GPay / PhonePe / Paytm)</span>
+    </label>
+
+    <label class="payment-option">
+        <input type="radio" name="payment" value="Debit Card">
+        <span>💳 Debit Card</span>
+    </label>
+
+    <label class="payment-option">
+        <input type="radio" name="payment" value="Credit Card">
+        <span>💳 Credit Card</span>
+    </label>
+
+    <div class="price-box">
+        Payment Amount:
+        <strong id="paymentAmount">₹0</strong>
+    </div>
+
+    <p style="color:#fbbf24;font-size:13px">
+        DEMO MODE: This button simulates payment success.
+        No real money will be transferred.
+    </p>
+
+    <button class="pay-btn" onclick="processPayment()">
+        PAY NOW
+    </button>
+
+    <p id="paymentStatus"></p>
+
+</div>
+
+<!-- GENERATED TICKET -->
+
+<div id="ticketSection">
+
+    <h2 style="text-align:center">Generated E-Ticket</h2>
+
+    <div class="ticket" id="ticket">
+
+        <div class="ticket-header">
+
+            <div class="apsrtc-logo">APSRTC</div>
+
+            <h2>PALLEVELUGU LIVE</h2>
+
+            <p>BUS RESERVATION TICKET</p>
+
+            <div class="demo-stamp">
+                DEMO - NOT VALID FOR TRAVEL
+            </div>
+
+        </div>
+
+        <div class="ticket-route">
+            <h3 id="ticketRoute">Vijayawada → Guntur</h3>
+            <p>Passenger Journey Details</p>
+        </div>
+
+        <div class="ticket-grid">
+
+            <div class="ticket-item">
+                <small>Ticket Number</small>
+                <strong id="ticketNumber"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Booking Date</small>
+                <strong id="ticketDate"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Booking Time</small>
+                <strong id="ticketTime"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Bus Registration Number</small>
+                <strong id="ticketBus"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Bus Type</small>
+                <strong id="ticketType"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Passenger Name</small>
+                <strong id="ticketName"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Mobile Number</small>
+                <strong id="ticketMobile"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Selected Seats</small>
+                <strong id="ticketSeats"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Payment Method</small>
+                <strong id="ticketPayment"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Payment Status</small>
+                <strong style="color:green">DEMO SUCCESS</strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Ticket Amount</small>
+                <strong id="ticketAmount"></strong>
+            </div>
+
+            <div class="ticket-item">
+                <small>Departure</small>
+                <strong id="ticketDeparture"></strong>
+            </div>
+
+        </div>
+
+        <div class="qr-area">
+
+            <h3>Ticket QR Code</h3>
+
+            <div id="qrcode"></div>
+
+            <p>Scan to read ticket details</p>
+
+            <p style="font-size:12px;color:#b91c1c">
+                Demonstration QR only - official verification
+                requires APSRTC-authorized server integration.
+            </p>
+
+        </div>
+
+        <div class="ticket-footer">
+            <strong>APSRTC - ANDHRA PRADESH STATE ROAD TRANSPORT CORPORATION</strong>
+            <p>PALLEVELUGU LIVE - DEMONSTRATION PROJECT</p>
+            <p>Not an official booking confirmation</p>
+        </div>
+
+    </div>
+
+    <button class="print-btn" onclick="printTicket()">
+        PRINT / SAVE TICKET
+    </button>
+
+</div>
+
+<!-- QR TICKET VERIFICATION -->
+
+<div class="verify-box">
+
+    <h2>Ticket Verification</h2>
+
+    <p>Enter the ticket number to check the demo booking record.</p>
+
+    <input id="verifyTicketNumber"
+        placeholder="Enter Ticket Number">
+
+    <button class="book-btn" onclick="verifyTicket()">
+        VERIFY TICKET
+    </button>
+
+    <div id="verifyResult" class="verify-result"></div>
+
+    <p style="color:#fbbf24;font-size:12px;margin-top:12px">
+        This browser-based demonstration is not secure
+        authentication. Real verification requires a server.
+    </p>
 
 </div>
 
@@ -1196,114 +1599,181 @@ button.book-btn:hover {
 
 <script>
 
-// Initial booked seats (Demo data)
-let bookedSeats = [3, 5, 8, 10, 13, 16, 19, 22];
+// =======================================
+// BUS SEAT CONFIGURATION
+// =======================================
+
+const TOTAL_SEATS = 57;
+const NORMAL_ROWS = 10;
+const FARE = 30; // DEMO fare only; replace with verified route fare.
+
+let bookedSeats = [
+    2, 5, 8, 11, 14, 17, 21,
+    24, 28, 31, 35, 39, 43, 48, 54
+];
 
 let selectedSeats = [];
 
-let totalSeats = 24;
+let currentTicket = null;
 
-// Create bus seats
-function displaySeats() {
+// =======================================
+// BUS DETAILS
+// =======================================
 
-    const container = document.getElementById("seatContainer");
+function getValue(keys, fallback) {
 
-    container.innerHTML = "";
+    for (const key of keys) {
 
-    for (let row = 0; row < 6; row++) {
+        const value = localStorage.getItem(key);
 
-        let seatRow = document.createElement("div");
-        seatRow.className = "seat-row";
-
-        let leftGroup = document.createElement("div");
-        leftGroup.className = "seat-group";
-
-        let rightGroup = document.createElement("div");
-        rightGroup.className = "seat-group";
-
-        for (let col = 0; col < 4; col++) {
-
-            let seatNumber = row * 4 + col + 1;
-
-            let seat = document.createElement("button");
-
-            seat.className = "seat";
-            seat.textContent = seatNumber;
-
-            if (bookedSeats.includes(seatNumber)) {
-
-                seat.classList.add("booked");
-                seat.disabled = true;
-
-            }
-
-            else if (selectedSeats.includes(seatNumber)) {
-
-                seat.classList.add("selected");
-
-            }
-
-            else {
-
-                seat.classList.add("available");
-
-            }
-
-            seat.onclick = function() {
-                toggleSeat(seatNumber);
-            };
-
-            if (col < 2) {
-                leftGroup.appendChild(seat);
-            } else {
-                rightGroup.appendChild(seat);
-            }
-
+        if (value && value !== "null") {
+            return value;
         }
+    }
 
-        seatRow.appendChild(leftGroup);
-        seatRow.appendChild(rightGroup);
+    return fallback;
+}
 
-        container.appendChild(seatRow);
+const busDetails = {
+    number: getValue(["busNumber", "selectedBusNumber"], "AP 16 Z 1234"),
+    type: getValue(["busType", "selectedBusType"], "Pallevelugu"),
+    pickup: getValue(["pickupStop", "selectedPickup", "pickup"], "Vijayawada"),
+    drop: getValue(["dropoffStop", "selectedDropoff", "drop"], "Guntur"),
+    departure: getValue(["departure", "busDeparture"], "09:00 AM"),
+    arrival: getValue(["arrival", "busArrival"], "10:30 AM")
+};
+
+document.getElementById("busNumber").textContent = busDetails.number;
+document.getElementById("busType").textContent = busDetails.type;
+document.getElementById("fromStop").textContent = busDetails.pickup;
+document.getElementById("toStop").textContent = busDetails.drop;
+document.getElementById("departure").textContent = busDetails.departure;
+document.getElementById("arrival").textContent = busDetails.arrival;
+
+// =======================================
+// CREATE SEATS
+// =======================================
+
+function createSeat(number, parent) {
+
+    const seat = document.createElement("button");
+
+    seat.type = "button";
+    seat.className = "seat";
+    seat.textContent = number;
+
+    if (bookedSeats.includes(number)) {
+
+        seat.classList.add("booked");
+        seat.disabled = true;
+
+    } else if (selectedSeats.includes(number)) {
+
+        seat.classList.add("selected");
+
+    } else {
+
+        seat.classList.add("available");
 
     }
 
-    updateCounts();
+    seat.onclick = () => toggleSeat(number);
 
+    parent.appendChild(seat);
 }
 
-// Select or deselect a seat
+function displaySeats() {
+
+    const container = document.getElementById("seatContainer");
+    const lastRow = document.getElementById("lastRow");
+
+    container.innerHTML = "";
+    lastRow.innerHTML = "";
+
+    let number = 1;
+
+    for (let row = 1; row <= NORMAL_ROWS; row++) {
+
+        if (row === 4) {
+
+            const doorSection = document.createElement("div");
+            doorSection.className = "door-section";
+
+            const door = document.createElement("div");
+            door.className = "door";
+            door.textContent = "🚪 BUS DOOR";
+
+            doorSection.appendChild(door);
+            container.appendChild(doorSection);
+        }
+
+        const seatRow = document.createElement("div");
+        seatRow.className = "seat-row";
+
+        const left = document.createElement("div");
+        left.className = "seat-group";
+
+        const aisle = document.createElement("div");
+        aisle.className = "aisle";
+        aisle.textContent = "AISLE";
+
+        const right = document.createElement("div");
+        right.className = "seat-group";
+
+        // LEFT: 2 seats
+
+        for (let i = 0; i < 2; i++) {
+            createSeat(number++, left);
+        }
+
+        // RIGHT: 3 seats
+
+        for (let i = 0; i < 3; i++) {
+            createSeat(number++, right);
+        }
+
+        seatRow.append(left, aisle, right);
+        container.appendChild(seatRow);
+    }
+
+    // LAST ROW: 7 seats
+
+    for (let i = 0; i < 7; i++) {
+        createSeat(number++, lastRow);
+    }
+
+    updateCounts();
+}
+
+// =======================================
+// SEAT SELECTION
+// =======================================
+
 function toggleSeat(number) {
 
     if (bookedSeats.includes(number)) return;
 
     if (selectedSeats.includes(number)) {
 
-        selectedSeats = selectedSeats.filter(
-            seat => seat !== number
-        );
+        selectedSeats = selectedSeats.filter(s => s !== number);
 
-    }
-
-    else {
+    } else {
 
         if (selectedSeats.length >= 4) {
-            alert("You can select maximum 4 seats.");
+            alert("Maximum 4 seats allowed.");
             return;
         }
 
         selectedSeats.push(number);
-
     }
 
     displaySeats();
-
+    updatePrice();
 }
 
-// Update seat information
 function updateCounts() {
 
-    document.getElementById("total").textContent = totalSeats;
+    document.getElementById("total").textContent = TOTAL_SEATS;
 
     document.getElementById("booked").textContent =
         bookedSeats.length;
@@ -1312,68 +1782,371 @@ function updateCounts() {
         selectedSeats.length;
 
     document.getElementById("available").textContent =
-        totalSeats - bookedSeats.length - selectedSeats.length;
+        TOTAL_SEATS - bookedSeats.length - selectedSeats.length;
 
     document.getElementById("seatNumbers").textContent =
-        selectedSeats.length
-        ? selectedSeats.join(", ")
-        : "None";
+        selectedSeats.length ? selectedSeats.join(", ") : "None";
 
+    document.getElementById("passengerCount").textContent =
+        selectedSeats.length;
 }
 
-// Confirm booking
-function bookSeats() {
+function updatePrice() {
 
-    let name = document.getElementById("name").value.trim();
+    const amount = selectedSeats.length * FARE;
 
-    let mobile = document.getElementById("mobile").value.trim();
+    document.getElementById("singleFare").textContent =
+        "₹" + FARE;
 
-    let message = document.getElementById("message");
+    document.getElementById("totalFare").textContent =
+        "₹" + amount;
+}
 
-    if (name === "" || mobile === "") {
+// =======================================
+// PROCEED TO PAYMENT
+// =======================================
 
-        alert("Please enter passenger details.");
+function showPayment() {
+
+    const name = document.getElementById("name").value.trim();
+    const mobile = document.getElementById("mobile").value.trim();
+
+    if (!name) {
+        alert("Enter passenger name.");
         return;
-
     }
 
     if (!/^[6-9]\d{9}$/.test(mobile)) {
-
-        alert("Enter a valid 10-digit mobile number.");
+        alert("Enter valid 10-digit mobile number.");
         return;
-
     }
 
     if (selectedSeats.length === 0) {
-
-        alert("Please select at least one seat.");
+        alert("Please select seats.");
         return;
-
     }
 
-    let confirmedSeats = [...selectedSeats];
+    document.getElementById("paymentAmount").textContent =
+        "₹" + (selectedSeats.length * FARE);
 
-    bookedSeats.push(...confirmedSeats);
+    document.getElementById("paymentSection").classList.remove("hidden");
 
-    selectedSeats = [];
+    document.getElementById("paymentSection").scrollIntoView({
+        behavior: "smooth"
+    });
+}
 
-    message.innerHTML =
-        "Booking Successful!<br>" +
-        "Passenger: " + name +
-        "<br>Mobile: " + mobile +
-        "<br>Booked Seats: " + confirmedSeats.join(", ");
+// =======================================
+// PAYMENT PROCESS
+// =======================================
 
-    displaySeats();
+function processPayment() {
+
+    const payment = document.querySelector(
+        'input[name="payment"]:checked'
+    );
+
+    if (!payment) {
+        alert("Please select a payment method.");
+        return;
+    }
+
+    if (selectedSeats.length === 0) {
+        alert("Please select seats first.");
+        return;
+    }
+
+    const status = document.getElementById("paymentStatus");
+
+    status.textContent = "Processing DEMO payment...";
+
+    // DEMONSTRATION ONLY:
+    // This does not contact a bank, UPI app or payment gateway.
+    // Replace with verified gateway callback before issuing real tickets.
+
+    const paymentMethod = payment.value;
+
+    const amount = selectedSeats.length * FARE;
+
+    setTimeout(function() {
+
+        const ticketNumber =
+            "PLV" + Date.now().toString().slice(-10);
+
+        const now = new Date();
+
+        currentTicket = {
+
+            ticketNumber: ticketNumber,
+
+            passenger: document.getElementById("name").value.trim(),
+
+            mobile: document.getElementById("mobile").value.trim(),
+
+            busNumber: busDetails.number,
+
+            busType: busDetails.type,
+
+            pickup: busDetails.pickup,
+
+            drop: busDetails.drop,
+
+            departure: busDetails.departure,
+
+            arrival: busDetails.arrival,
+
+            seats: [...selectedSeats],
+
+            paymentMethod: paymentMethod,
+
+            amount: amount,
+
+            date: now.toLocaleDateString("en-IN"),
+
+            time: now.toLocaleTimeString("en-IN"),
+
+            status: "DEMO PAYMENT SUCCESS"
+        };
+
+        // Store demo ticket in browser.
+
+        localStorage.setItem(
+            "demoTicket_" + ticketNumber,
+            JSON.stringify(currentTicket)
+        );
+
+        // Mark seats booked in this browser.
+
+        bookedSeats.push(...selectedSeats);
+
+        selectedSeats = [];
+
+        status.textContent = "DEMO PAYMENT SUCCESSFUL!";
+
+        generateTicket(currentTicket);
+
+        displaySeats();
+        updatePrice();
+
+        document.getElementById("ticketSection").style.display =
+            "block";
+
+        document.getElementById("ticketSection").scrollIntoView({
+            behavior: "smooth"
+        });
+
+    }, 1500);
+}
+
+// =======================================
+// GENERATE DIGITAL TICKET
+// =======================================
+
+function generateTicket(data) {
+
+    document.getElementById("ticketNumber").textContent =
+        data.ticketNumber;
+
+    document.getElementById("ticketDate").textContent =
+        data.date;
+
+    document.getElementById("ticketTime").textContent =
+        data.time;
+
+    document.getElementById("ticketBus").textContent =
+        data.busNumber;
+
+    document.getElementById("ticketType").textContent =
+        data.busType;
+
+    document.getElementById("ticketName").textContent =
+        data.passenger;
+
+    document.getElementById("ticketMobile").textContent =
+        data.mobile;
+
+    document.getElementById("ticketSeats").textContent =
+        data.seats.join(", ");
+
+    document.getElementById("ticketPayment").textContent =
+        data.paymentMethod;
+
+    document.getElementById("ticketAmount").textContent =
+        "₹" + data.amount;
+
+    document.getElementById("ticketDeparture").textContent =
+        data.departure;
+
+    document.getElementById("ticketRoute").textContent =
+        data.pickup + " → " + data.drop;
+
+    // QR CODE CONTAINS TICKET DETAILS
+
+    const qrDetails = JSON.stringify({
+        ticketNumber: data.ticketNumber,
+        passenger: data.passenger,
+        bus: data.busNumber,
+        pickup: data.pickup,
+        drop: data.drop,
+        seats: data.seats,
+        date: data.date,
+        time: data.time,
+        amount: data.amount,
+        paymentMethod: data.paymentMethod,
+        status: data.status,
+        demo: true
+    });
+
+    const qr = document.getElementById("qrcode");
+
+    qr.innerHTML = "";
+
+    if (typeof QRCode === "undefined") {
+        qr.textContent = "QR library unavailable. Check internet connection.";
+        return;
+    }
+
+    new QRCode(qr, {
+        text: qrDetails,
+        width: 180,
+        height: 180,
+        correctLevel: QRCode.CorrectLevel.M
+    });
 
 }
 
-// Initial display
+// =======================================
+// PRINT / SAVE TICKET
+// =======================================
+
+function printTicket() {
+
+    if (!currentTicket) {
+        alert("No ticket generated.");
+        return;
+    }
+
+    window.print();
+}
+
+// =======================================
+// VERIFY DEMO TICKET
+// =======================================
+
+function verifyTicket() {
+
+    const number = document.getElementById(
+        "verifyTicketNumber"
+    ).value.trim();
+
+    const result = document.getElementById("verifyResult");
+
+    if (!number) {
+        result.textContent = "Enter ticket number.";
+        return;
+    }
+
+    const savedTicket = localStorage.getItem(
+        "demoTicket_" + number
+    );
+
+    if (savedTicket) {
+
+        const ticket = JSON.parse(savedTicket);
+
+        result.innerHTML = `
+            <span style="color:#4ade80">
+                ✓ DEMO TICKET RECORD FOUND
+            </span>
+            <br>
+            Ticket: ${escapeHTML(ticket.ticketNumber)}
+            <br>
+            Passenger: ${escapeHTML(ticket.passenger)}
+            <br>
+            Route: ${escapeHTML(ticket.pickup)}
+            → ${escapeHTML(ticket.drop)}
+            <br>
+            Seats: ${ticket.seats.join(", ")}
+            <br>
+            Payment: ${escapeHTML(ticket.paymentMethod)}
+            <br>
+            <span style="color:#fbbf24">
+                DEMO RECORD ONLY - NOT OFFICIALLY AUTHENTICATED
+            </span>
+        `;
+
+    } else {
+
+        result.innerHTML = `
+            <span style="color:#f87171">
+                ✗ NO MATCHING DEMO RECORD FOUND
+            </span>
+            <br>
+            This does not establish whether an official RTC ticket
+            is genuine or fake.
+        `;
+    }
+}
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, function(char) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[char];
+    });
+}
+
+// INITIALIZE
+
 displaySeats();
+updatePrice();
 
 </script>
 
+<style>
+@media print {
+    body {
+        background: white !important;
+        padding: 0;
+    }
+
+    .container {
+        background: white;
+        padding: 0;
+        max-width: 100%;
+    }
+
+    header, .bus-info, .summary, .bus-layout,
+    .legend, .booking, .payment, .verify-box,
+    #ticketSection > h2, .print-btn {
+        display: none !important;
+    }
+
+    #ticketSection {
+        display: block !important;
+        margin: 0;
+    }
+
+    .ticket {
+        display: block;
+        border: 2px solid #075985;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .demo-stamp {
+        display: inline-block !important;
+    }
+}
+</style>
+
 </body>
 </html>
+
 
 
 
